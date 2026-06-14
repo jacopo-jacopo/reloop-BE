@@ -140,6 +140,8 @@ public class AnnuncioController {
                 ann.setCondizioni(Annuncio.Condizioni.valueOf(body.get("condizioni").toString()));
             if (body.containsKey("stato_annuncio"))
                 ann.setStatoAnnuncio(Annuncio.StatoAnnuncio.valueOf(body.get("stato_annuncio").toString()));
+            if (body.containsKey("notifica_oscuramento_letta"))
+                ann.setNotificaOscuramentoLetta(Boolean.parseBoolean(body.get("notifica_oscuramento_letta").toString()));
             return ResponseEntity.ok(annuncioRepo.save(ann));
         }).orElse(ResponseEntity.notFound().build());
     }

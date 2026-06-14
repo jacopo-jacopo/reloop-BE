@@ -41,6 +41,9 @@ public class Annuncio {
     @JsonIgnoreProperties({"password"})
     private UtenteRegistrato pubblicante;
 
+    @Column(name = "notifica_oscuramento_letta", nullable = false)
+    private boolean notificaOscuramentoLetta = false;
+
     public enum Condizioni {
         scarso, discreto, buono, ottimo, come_nuovo
     }

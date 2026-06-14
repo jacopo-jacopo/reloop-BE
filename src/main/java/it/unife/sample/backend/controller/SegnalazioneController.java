@@ -57,6 +57,13 @@ public class SegnalazioneController {
         UtenteRegistrato segnalante = utenteRepo.findById(idUtente).orElse(null);
         if (segnalante == null) return ResponseEntity.badRequest().body("Utente non trovato");
 
+        // Impedisce di segnalare di nuovo lo stesso annuncio se l'utente ha già
+        // una segnalazione non chiusa per esso
+        if (segnalazioneRepo.existsBySegnalante_IdUtenteRegAndAnnuncioSegnalato_IdAnnuncioAndStatoSegnalazioneNot(
+                idUtente, idAnnuncio, Segnalazione.StatoSegnalazione.chiusa)) {
+            return ResponseEntity.status(409).body("Hai già segnalato questo annuncio");
+        }
+
         Segnalazione s = new Segnalazione();
         s.setAnnuncioSegnalato(annuncio);
         s.setSegnalante(segnalante);
