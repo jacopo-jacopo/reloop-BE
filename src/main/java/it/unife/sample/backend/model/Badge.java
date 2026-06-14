@@ -13,14 +13,16 @@ public class Badge {
     @Column(name = "nome_badge")
     private String nomeBadge;
 
-    @Column(name = "soglia_punti", nullable = false)
+    // NULL = la condizione di sblocco va estrapolata da descrizioneBadge
+    @Column(name = "soglia_punti")
     private Integer sogliaPunti;
 
     @Column(name = "descrizione_badge", nullable = false)
     private String descrizioneBadge;
 
-    @Column(name = "emoji")
-    private String emoji;
+    // Nome/percorso del file .png dell'icona, relativo a assets/badges/
+    @Column(name = "icona_badge")
+    private String iconaBadge;
 
     @Column(name = "colore")
     private String colore;

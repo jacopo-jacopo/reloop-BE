@@ -41,4 +41,14 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
         @Param("ultimaVisita") LocalDateTime ultimaVisita);
 
     long countByStatoChat(Chat.StatoChat stato);
+
+    /** Numero di scambi completati a cui l'utente ha partecipato (come pubblicante o proponente). */
+    @Query(value = """
+        SELECT COUNT(*) FROM interazione_chat c
+        INNER JOIN proposta p ON c.id_proposta_generante = p.id_proposta
+        INNER JOIN annuncio a ON p.id_annuncio_interesse = a.id_annuncio
+        WHERE c.stato_chat = 'completata'
+          AND (p.id_utente_reg_proponente = :idUtente OR a.id_utente_reg_pubblicante = :idUtente)
+    """, nativeQuery = true)
+    long countCompletateByUtente(@Param("idUtente") Long idUtente);
 }

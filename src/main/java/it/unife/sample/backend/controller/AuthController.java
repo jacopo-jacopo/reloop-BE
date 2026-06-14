@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * Controller REST per autenticazione e registrazione.
@@ -31,6 +32,10 @@ public class AuthController {
     private final UtenteRegistratoRepository utenteRepo;
     private final AmministratoreRepository adminRepo;
     private final QuartiereRepository quartiereRepo;
+
+    // Almeno 8 caratteri, 1 maiuscola, 1 minuscola, 1 numero, 1 carattere speciale tra !?#-_
+    private static final Pattern PASSWORD_PATTERN =
+            Pattern.compile("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!?#\\-_]).{8,}$");
 
     /**
      * POST /api/auth/login
@@ -104,9 +109,19 @@ public class AuthController {
     @PostMapping("/registra")
     public ResponseEntity<?> registra(@RequestBody RegistrazioneRequest req) {
 
+        // Il dominio @reloop.it è riservato agli amministratori
+        if (req.getEmail() != null && req.getEmail().toLowerCase().endsWith("@reloop.it")) {
+            return ResponseEntity.status(400).body("Email non valida");
+        }
+
         // Vincolo di unicità email — restituisce 409 Conflict se già esiste
         if (utenteRepo.existsByEmail(req.getEmail())) {
             return ResponseEntity.status(409).body("Email già in uso");
+        }
+
+        // La password deve avere almeno 8 caratteri, 1 maiuscola, 1 minuscola, 1 numero e 1 carattere speciale (!?#-_)
+        if (req.getPassword() == null || !PASSWORD_PATTERN.matcher(req.getPassword()).matches()) {
+            return ResponseEntity.status(400).body("Password non valida");
         }
 
         // Verifica che il quartiere selezionato esista nel database

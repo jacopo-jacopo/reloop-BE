@@ -3,6 +3,7 @@ package it.unife.sample.backend.repository;
 import it.unife.sample.backend.model.UtenteRegistrato;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,4 +19,8 @@ public interface UtenteRegistratoRepository extends JpaRepository<UtenteRegistra
 
     // Utenti di un quartiere — usato per calcolo CO₂ quartiere
     List<UtenteRegistrato> findByQuartiere_IdQuartiere(Long idQuartiere);
+
+    // Numero di utenti con punteggio strettamente maggiore — 0 = primo in classifica
+    @Query("SELECT COUNT(u) FROM UtenteRegistrato u WHERE u.punteggio > :punteggio")
+    long countConPunteggioMaggiore(@Param("punteggio") Integer punteggio);
 }

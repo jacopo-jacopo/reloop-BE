@@ -20,12 +20,13 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:4200")
 public class UtenteController {
 
-    // Repository per utenti, badge, annunci
+    // Repository per utenti, badge, annunci, chat
     private final UtenteRegistratoRepository utenteRepo;
     private final BadgeOttenutoRepository badgeOttenutoRepo;
     private final BadgeRepository badgeRepo;
     private final AnnuncioRepository annuncioRepo;
     private final QuartiereRepository quartiereRepo;
+    private final ChatRepository chatRepo;
 
     /**
      * GET /api/utenti/me
@@ -45,16 +46,26 @@ public class UtenteController {
 
     /**
      * GET /api/utenti/{id}
-     * Restituisce il profilo pubblico di un utente per ID.
-     * Usato dall'overlay profilo pubblico quando si clicca su un utente.
+     * Restituisce il profilo pubblico di un utente per ID, incluso il numero
+     * di scambi completati. Usato dall'overlay profilo pubblico quando si
+     * clicca su un utente.
      *
      * @param id  ID dell'utente da visualizzare
      * @return 200 con il profilo, 404 se non trovato
      */
     @GetMapping("/{id}")
-    public ResponseEntity<UtenteRegistrato> getById(@PathVariable Long id) {
+    public ResponseEntity<?> getById(@PathVariable Long id) {
         return utenteRepo.findById(id)
-                .map(ResponseEntity::ok)
+                .map(u -> ResponseEntity.ok(Map.of(
+                        "id_utente_reg",      u.getIdUtenteReg(),
+                        "nome_completo",      u.getNomeCompleto(),
+                        "indirizzo",          u.getIndirizzo(),
+                        "punteggio",          u.getPunteggio(),
+                        "co2_totale",         u.getCo2Totale(),
+                        "foto_profilo",       u.getFotoProfilo() != null ? u.getFotoProfilo() : "",
+                        "quartiere",          u.getQuartiere(),
+                        "scambi_completati",  chatRepo.countCompletateByUtente(id)
+                )))
                 .orElse(ResponseEntity.notFound().build());
     }
 

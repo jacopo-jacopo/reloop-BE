@@ -19,6 +19,7 @@ public class SegnalazioneController {
     private final AnnuncioRepository annuncioRepo;
     private final UtenteRegistratoRepository utenteRepo;
     private final AmministratoreRepository adminRepo;
+    private final EliminaRepository eliminaRepo;
 
     /**
      * GET /api/segnalazioni
@@ -85,12 +86,14 @@ public class SegnalazioneController {
     /**
      * PUT /api/segnalazioni/{id}/chiudi
      * Chiude la segnalazione. Se oscura_annuncio=true imposta stato oscurato
-     * sull'annuncio — corrisponde alla relazione ESAMINA/elimina nel DB.
+     * sull'annuncio e registra la relazione "elimina" (quale admin ha oscurato
+     * quale annuncio) nel DB.
      */
     @PutMapping("/{id}/chiudi")
     public ResponseEntity<?> chiudi(
             @PathVariable Long id,
-            @RequestBody Map<String, Object> body) {
+            @RequestBody Map<String, Object> body,
+            @RequestHeader("X-User-Id") Long idAdmin) {
 
         boolean oscura = Boolean.parseBoolean(body.get("oscura_annuncio").toString());
 
@@ -99,8 +102,23 @@ public class SegnalazioneController {
 
             if (oscura) {
                 // Oscura l'annuncio — rimane nel DB ma non è più visibile agli utenti
-                s.getAnnuncioSegnalato().setStatoAnnuncio(Annuncio.StatoAnnuncio.oscurato);
-                annuncioRepo.save(s.getAnnuncioSegnalato());
+                Annuncio annuncio = s.getAnnuncioSegnalato();
+                annuncio.setStatoAnnuncio(Annuncio.StatoAnnuncio.oscurato);
+                annuncioRepo.save(annuncio);
+
+                // Registra chi ha oscurato l'annuncio
+                Amministratore admin = adminRepo.findById(idAdmin).orElse(null);
+                if (admin != null) {
+                    Elimina.EliminaId eliminaId = new Elimina.EliminaId();
+                    eliminaId.setIdUtenteAdm(admin.getIdUtenteAdm());
+                    eliminaId.setIdAnnuncioEliminato(annuncio.getIdAnnuncio());
+
+                    Elimina elimina = new Elimina();
+                    elimina.setId(eliminaId);
+                    elimina.setAmministratore(admin);
+                    elimina.setAnnuncioEliminato(annuncio);
+                    eliminaRepo.save(elimina);
+                }
             }
 
             return ResponseEntity.ok(segnalazioneRepo.save(s));
