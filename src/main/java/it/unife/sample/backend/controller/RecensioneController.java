@@ -19,7 +19,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/recensioni")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class RecensioneController {
 
     // Repository per recensioni, utenti, chat e messaggi

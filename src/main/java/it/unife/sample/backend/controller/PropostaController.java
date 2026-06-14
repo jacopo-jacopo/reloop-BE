@@ -17,7 +17,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/proposte")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class PropostaController {
 
     // Repository necessari per la gestione delle proposte

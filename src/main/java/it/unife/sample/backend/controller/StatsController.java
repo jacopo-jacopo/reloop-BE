@@ -17,7 +17,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/stats")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class StatsController {
 
     // Repository per accedere a chat, utenti e annunci

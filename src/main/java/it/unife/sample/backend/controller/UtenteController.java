@@ -17,7 +17,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/utenti")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class UtenteController {
 
     // Repository per utenti, badge, annunci, chat

@@ -20,5 +20,9 @@ spring:
 climatiq:
   api-key: ${CLIMATIQ_API_KEY:}
 
+jwt:
+  secret: ${JWT_SECRET:reloop-dev-secret-change-me-please-32chars-min}
+  expiration-ms: 604800000 # 7 giorni
+
 server:
   port: 8080

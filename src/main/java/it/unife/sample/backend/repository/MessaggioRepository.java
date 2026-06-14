@@ -18,7 +18,12 @@ public interface MessaggioRepository extends JpaRepository<Messaggio, Messaggio.
 
     @Modifying(clearAutomatically = true)
     @Transactional
-    @Query("UPDATE Messaggio m SET m.flagLettura = true WHERE m.chat.idChat = :idChat AND m.mittente.idUtenteReg != :idUtente AND m.flagLettura = false")
+    @Query("""
+        UPDATE Messaggio m SET m.flagLettura = true
+        WHERE m.chat.idChat = :idChat
+          AND m.flagLettura = false
+          AND (m.mittente.idUtenteReg != :idUtente OR m.contenuto LIKE '%è stato rimosso da un amministratore e non è più disponibile.%')
+    """)
     void markAsRead(@Param("idChat") Long idChat, @Param("idUtente") Long idUtente);
 
     @Query(value = """
@@ -27,8 +32,8 @@ public interface MessaggioRepository extends JpaRepository<Messaggio, Messaggio.
         INNER JOIN interazione_chat c ON m.id_chat = c.id_chat
         INNER JOIN proposta p        ON c.id_proposta_generante = p.id_proposta
         INNER JOIN annuncio a        ON p.id_annuncio_interesse = a.id_annuncio
-        WHERE m.id_mittente != :idUtente
-          AND m.flag_lettura = false
+        WHERE m.flag_lettura = false
+          AND (m.id_mittente != :idUtente OR m.contenuto LIKE '%è stato rimosso da un amministratore e non è più disponibile.%')
           AND (p.id_utente_reg_proponente       = :idUtente
                OR a.id_utente_reg_pubblicante   = :idUtente)
     """, nativeQuery = true)

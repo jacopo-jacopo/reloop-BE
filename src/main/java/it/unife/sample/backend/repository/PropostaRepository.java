@@ -37,5 +37,19 @@ public interface PropostaRepository extends JpaRepository<Proposta, Long> {
         @Param("idAnnuncio") Long idAnnuncio,
         @Param("idPropostaEsclusa") Long idPropostaEsclusa);
 
+    /** Proposte in un dato stato che hanno questo annuncio come annuncio_interesse. */
+    List<Proposta> findByAnnuncioInteresse_IdAnnuncioAndStatoProposta(
+        Long idAnnuncio, Proposta.StatoProposta stato);
+
+    /** Proposte in un dato stato che hanno questo annuncio tra gli annunci_offerti. */
+    @Query("""
+        SELECT DISTINCT ai.proposta FROM AnnuncioIncluso ai
+        WHERE ai.annuncioOfferto.idAnnuncio = :idAnnuncio
+        AND ai.proposta.statoProposta = :stato
+    """)
+    List<Proposta> findByAnnuncioOffertoAndStatoProposta(
+        @Param("idAnnuncio") Long idAnnuncio,
+        @Param("stato") Proposta.StatoProposta stato);
+
     long count();
 }

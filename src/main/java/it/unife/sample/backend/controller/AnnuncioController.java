@@ -16,7 +16,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/annunci")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class AnnuncioController {
 
     private final AnnuncioRepository annuncioRepo;

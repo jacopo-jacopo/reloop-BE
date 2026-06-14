@@ -15,7 +15,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/quartieri")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class QuartiereController {
 
     // Repository per accedere alla tabella quartiere

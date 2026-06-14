@@ -12,7 +12,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/segnalazioni")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class SegnalazioneController {
 
     private final SegnalazioneRepository segnalazioneRepo;
@@ -20,6 +19,9 @@ public class SegnalazioneController {
     private final UtenteRegistratoRepository utenteRepo;
     private final AmministratoreRepository adminRepo;
     private final EliminaRepository eliminaRepo;
+    private final PropostaRepository propostaRepo;
+    private final ChatRepository chatRepo;
+    private final MessaggioRepository messaggioRepo;
 
     /**
      * GET /api/segnalazioni
@@ -126,9 +128,76 @@ public class SegnalazioneController {
                     elimina.setAnnuncioEliminato(annuncio);
                     eliminaRepo.save(elimina);
                 }
+
+                // Rifiuta le proposte in attesa e chiude le chat aperte che coinvolgono l'annuncio
+                gestisciOscuramento(annuncio);
             }
 
             return ResponseEntity.ok(segnalazioneRepo.save(s));
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // Suffisso del messaggio di sistema inserito quando un annuncio coinvolto in
+    // una chat aperta viene oscurato da un amministratore.
+    private static final String OSCURAMENTO_SUFFIX =
+            "è stato rimosso da un amministratore e non è più disponibile.";
+
+    /**
+     * Quando un annuncio viene oscurato da un admin:
+     * - tutte le proposte in_attesa che lo coinvolgono (come interesse o tra gli offerti)
+     *   vengono automaticamente rifiutate;
+     * - tutte le chat aperte che lo coinvolgono vengono chiuse (stato → annullata),
+     *   senza assegnare punti/CO2 né permettere recensioni. L'altro annuncio coinvolto
+     *   nello scambio torna "attivo". Viene aggiunto un messaggio di sistema che
+     *   avvisa che l'annuncio non è più disponibile.
+     */
+    private void gestisciOscuramento(Annuncio annuncio) {
+        Long idAnnuncio = annuncio.getIdAnnuncio();
+
+        // Rifiuta le proposte in attesa che coinvolgono l'annuncio
+        propostaRepo.findByAnnuncioInteresse_IdAnnuncioAndStatoProposta(idAnnuncio, Proposta.StatoProposta.in_attesa)
+            .forEach(p -> { p.setStatoProposta(Proposta.StatoProposta.rifiutata); propostaRepo.save(p); });
+
+        propostaRepo.findByAnnuncioOffertoAndStatoProposta(idAnnuncio, Proposta.StatoProposta.in_attesa)
+            .forEach(p -> { p.setStatoProposta(Proposta.StatoProposta.rifiutata); propostaRepo.save(p); });
+
+        // Chiude le chat aperte che coinvolgono l'annuncio
+        for (Chat chat : chatRepo.findAperteByAnnuncio(idAnnuncio)) {
+            chat.setStatoChat(Chat.StatoChat.annullata);
+            chatRepo.save(chat);
+
+            Proposta proposta = chat.getPropostaGenerante();
+
+            // Riattiva l'altro annuncio coinvolto nello scambio (quello non oscurato)
+            Annuncio annuncioInteresse = proposta.getAnnuncioInteresse();
+            if (!annuncioInteresse.getIdAnnuncio().equals(idAnnuncio)
+                    && annuncioInteresse.getStatoAnnuncio() == Annuncio.StatoAnnuncio.sospeso) {
+                annuncioInteresse.setStatoAnnuncio(Annuncio.StatoAnnuncio.attivo);
+                annuncioRepo.save(annuncioInteresse);
+            }
+
+            proposta.getAnnunciOfferti().stream()
+                .filter(AnnuncioIncluso::getFlagSelezionato)
+                .map(AnnuncioIncluso::getAnnuncioOfferto)
+                .filter(ann -> !ann.getIdAnnuncio().equals(idAnnuncio))
+                .filter(ann -> ann.getStatoAnnuncio() == Annuncio.StatoAnnuncio.sospeso)
+                .forEach(ann -> {
+                    ann.setStatoAnnuncio(Annuncio.StatoAnnuncio.attivo);
+                    annuncioRepo.save(ann);
+                });
+
+            // Messaggio di sistema che segnala la rimozione dell'annuncio
+            Long maxId = messaggioRepo.findMaxIdByIdChat(chat.getIdChat());
+            Messaggio.MessaggioId msgId = new Messaggio.MessaggioId();
+            msgId.setIdMessaggio(maxId + 1);
+            msgId.setIdChat(chat.getIdChat());
+
+            Messaggio msg = new Messaggio();
+            msg.setId(msgId);
+            msg.setChat(chat);
+            msg.setContenuto("L'annuncio '" + annuncio.getTitolo() + "' " + OSCURAMENTO_SUFFIX);
+            msg.setMittente(annuncioInteresse.getPubblicante());
+            messaggioRepo.save(msg);
+        }
     }
 }

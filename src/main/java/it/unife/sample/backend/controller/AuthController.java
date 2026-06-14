@@ -9,7 +9,11 @@ import it.unife.sample.backend.model.UtenteRegistrato;
 import it.unife.sample.backend.repository.AmministratoreRepository;
 import it.unife.sample.backend.repository.QuartiereRepository;
 import it.unife.sample.backend.repository.UtenteRegistratoRepository;
+import it.unife.sample.backend.security.JwtService;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,19 +23,36 @@ import java.util.regex.Pattern;
 /**
  * Controller REST per autenticazione e registrazione.
  * Espone gli endpoint sotto /api/auth.
- * Non usa JWT — l'autenticazione è basata sull'header X-User-Id
- * che il frontend inietta in ogni richiesta dopo il login.
+ * La sessione viene mantenuta tramite un cookie HttpOnly contenente un JWT,
+ * mentre l'header X-User-Id resta usato come identificativo applicativo
+ * nelle altre richieste.
  */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class AuthController {
 
     // Repository per utenti registrati, amministratori e quartieri
     private final UtenteRegistratoRepository utenteRepo;
     private final AmministratoreRepository adminRepo;
     private final QuartiereRepository quartiereRepo;
+    private final JwtService jwtService;
+
+    private static final String COOKIE_NAME = "session";
+
+    /**
+     * Costruisce il cookie HttpOnly contenente il JWT di sessione.
+     */
+    private ResponseCookie creaCookieSessione(Long idUtente, String tipo) {
+        String token = jwtService.generaToken(idUtente, tipo);
+        return ResponseCookie.from(COOKIE_NAME, token)
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(java.time.Duration.ofDays(7))
+                .build();
+    }
 
     // Almeno 8 caratteri, 1 maiuscola, 1 minuscola, 1 numero, 1 carattere speciale tra !?#-_
     private static final Pattern PASSWORD_PATTERN =
@@ -66,14 +87,17 @@ public class AuthController {
 
             Amministratore a = admin.get();
 
-            // Restituisce LoginResponse con tipo "admin"
-            return ResponseEntity.ok(new LoginResponse(
-                "admin",
-                a.getIdUtenteAdm(),
-                a.getNomeCompleto(),
-                a.getEmail(),
-                a  // L'oggetto completo admin viene incluso per il frontend
-            ));
+            // Restituisce LoginResponse con tipo "admin" e imposta il cookie di sessione
+            ResponseCookie cookie = creaCookieSessione(a.getIdUtenteAdm(), "admin");
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                    .body(new LoginResponse(
+                        "admin",
+                        a.getIdUtenteAdm(),
+                        a.getNomeCompleto(),
+                        a.getEmail(),
+                        a  // L'oggetto completo admin viene incluso per il frontend
+                    ));
         }
 
         // Per tutti gli altri domini — cerca tra gli utenti registrati
@@ -86,14 +110,17 @@ public class AuthController {
 
         UtenteRegistrato u = utente.get();
 
-        // Restituisce LoginResponse con tipo "utente"
-        return ResponseEntity.ok(new LoginResponse(
-            "utente",
-            u.getIdUtenteReg(),
-            u.getNomeCompleto(),
-            u.getEmail(),
-            u  // L'oggetto completo utente viene incluso per il frontend
-        ));
+        // Restituisce LoginResponse con tipo "utente" e imposta il cookie di sessione
+        ResponseCookie cookie = creaCookieSessione(u.getIdUtenteReg(), "utente");
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new LoginResponse(
+                    "utente",
+                    u.getIdUtenteReg(),
+                    u.getNomeCompleto(),
+                    u.getEmail(),
+                    u  // L'oggetto completo utente viene incluso per il frontend
+                ));
     }
 
     /**
@@ -143,12 +170,73 @@ public class AuthController {
         UtenteRegistrato salvato = utenteRepo.save(nuovo);
 
         // Restituisce LoginResponse identica al login — il frontend fa login automatico
+        ResponseCookie cookie = creaCookieSessione(salvato.getIdUtenteReg(), "utente");
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new LoginResponse(
+                    "utente",
+                    salvato.getIdUtenteReg(),
+                    salvato.getNomeCompleto(),
+                    salvato.getEmail(),
+                    salvato
+                ));
+    }
+
+    /**
+     * GET /api/auth/me
+     * Verifica il cookie di sessione e, se valido, restituisce i dati
+     * dell'utente/admin loggato — usato all'avvio dell'app per ripristinare
+     * la sessione dopo un refresh della pagina.
+     *
+     * @param token  JWT letto dal cookie "session" (assente se non loggato)
+     * @return 200 con LoginResponse se il cookie è valido, 401 altrimenti
+     */
+    @GetMapping("/me")
+    public ResponseEntity<?> me(@CookieValue(value = COOKIE_NAME, required = false) String token) {
+        if (token == null) {
+            return ResponseEntity.status(401).body("Non autenticato");
+        }
+
+        Claims claims = jwtService.validaEDecodifica(token);
+        if (claims == null) {
+            return ResponseEntity.status(401).body("Sessione non valida");
+        }
+
+        Long idUtente = Long.valueOf(claims.getSubject());
+        String tipo = claims.get("tipo", String.class);
+
+        if ("admin".equals(tipo)) {
+            Optional<Amministratore> admin = adminRepo.findById(idUtente);
+            if (admin.isEmpty()) return ResponseEntity.status(401).body("Sessione non valida");
+            Amministratore a = admin.get();
+            return ResponseEntity.ok(new LoginResponse(
+                "admin", a.getIdUtenteAdm(), a.getNomeCompleto(), a.getEmail(), a
+            ));
+        }
+
+        Optional<UtenteRegistrato> utente = utenteRepo.findById(idUtente);
+        if (utente.isEmpty()) return ResponseEntity.status(401).body("Sessione non valida");
+        UtenteRegistrato u = utente.get();
         return ResponseEntity.ok(new LoginResponse(
-            "utente",
-            salvato.getIdUtenteReg(),
-            salvato.getNomeCompleto(),
-            salvato.getEmail(),
-            salvato
+            "utente", u.getIdUtenteReg(), u.getNomeCompleto(), u.getEmail(), u
         ));
+    }
+
+    /**
+     * POST /api/auth/logout
+     * Rimuove il cookie di sessione.
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0)
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body("ok");
     }
 }
