@@ -102,10 +102,11 @@ public class AnnuncioController {
 
         Annuncio salvato = annuncioRepo.save(annuncio);
 
-        // Salva le foto se presenti nel body come array base64
+        // Salva le foto se presenti nel body come array base64 (massimo 4 per annuncio)
         if (body.containsKey("foto")) {
             List<String> fotoBase64 = (List<String>) body.get("foto");
-            for (int i = 0; i < fotoBase64.size(); i++) {
+            int numFoto = Math.min(fotoBase64.size(), 4);
+            for (int i = 0; i < numFoto; i++) {
                 Foto foto = new Foto();
                 foto.setUrlFoto(fotoBase64.get(i));
                 foto.setOrdine(i);
