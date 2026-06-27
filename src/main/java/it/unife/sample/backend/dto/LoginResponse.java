@@ -6,9 +6,9 @@ import lombok.AllArgsConstructor;
 @Data
 @AllArgsConstructor
 public class LoginResponse {
-    private String tipo;        // "utente" o "admin"
+    private String tipo;
     private Long id;
     private String nomeCompleto;
     private String email;
-    private Object utente;      // dati completi utente o admin
+    private Object utente;  // UtenteSessioneResponse oppure AdminSessioneResponse — mai entity grezza
 }

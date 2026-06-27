@@ -1,6 +1,5 @@
 package it.unife.sample.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -38,7 +37,6 @@ public class Annuncio {
     // FK: id_utente_reg_pubblicante → utente_registrato
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_utente_reg_pubblicante", nullable = false)
-    @JsonIgnoreProperties({"password"})
     private UtenteRegistrato pubblicante;
 
     @Column(name = "notifica_oscuramento_letta", nullable = false)

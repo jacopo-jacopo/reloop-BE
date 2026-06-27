@@ -1,6 +1,8 @@
 package it.unife.sample.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -10,23 +12,23 @@ import lombok.Data;
 @Data
 public class RegistrazioneRequest {
 
-    // Nome completo dell'utente — campo obbligatorio
+    @NotBlank
     @JsonProperty("nome_completo")
     private String nomeCompleto;
 
-    // Email univoca — usata per il login
+    @NotBlank
     @JsonProperty("email")
     private String email;
 
-    // Password in chiaro — in produzione usare BCrypt
+    @NotBlank
     @JsonProperty("password")
     private String password;
 
-    // Indirizzo fisico dell'utente nel quartiere
+    @NotBlank
     @JsonProperty("indirizzo")
     private String indirizzo;
 
-    // ID del quartiere selezionato durante la registrazione
+    @NotNull
     @JsonProperty("id_quartiere")
     private Long idQuartiere;
 }

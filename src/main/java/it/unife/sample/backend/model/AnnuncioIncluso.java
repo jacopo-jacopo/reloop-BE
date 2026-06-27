@@ -1,6 +1,5 @@
 package it.unife.sample.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,7 +15,6 @@ public class AnnuncioIncluso {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("idProposta")
     @JoinColumn(name = "id_proposta")
-    @JsonIgnore
     private Proposta proposta;
 
     // FK: id_annuncio_offerto → annuncio

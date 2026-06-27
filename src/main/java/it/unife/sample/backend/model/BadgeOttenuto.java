@@ -1,6 +1,5 @@
 package it.unife.sample.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
@@ -17,7 +16,6 @@ public class BadgeOttenuto {
     @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("idUtenteReg")
     @JoinColumn(name = "id_utente_reg")
-    @JsonIgnore
     private UtenteRegistrato utente;
 
     // FK: nome_badge → badge

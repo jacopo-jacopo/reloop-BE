@@ -1,6 +1,5 @@
 package it.unife.sample.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -28,7 +27,6 @@ public class Proposta {
     // FK: id_utente_reg_proponente → utente_registrato
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_utente_reg_proponente", nullable = false)
-    @JsonIgnoreProperties({"password"})
     private UtenteRegistrato proponente;
 
     @Column(name = "timestamp_proposta")

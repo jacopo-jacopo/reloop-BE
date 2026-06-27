@@ -1,6 +1,7 @@
 package it.unife.sample.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
@@ -10,11 +11,11 @@ import lombok.Data;
 @Data
 public class LoginRequest {
 
-    // Email dell'utente o dell'amministratore
+    @NotBlank
     @JsonProperty("email")
     private String email;
 
-    // Password in chiaro
+    @NotBlank
     @JsonProperty("password")
     private String password;
 }

@@ -25,13 +25,9 @@ public class BadgeService {
     private final UtenteRegistratoRepository utenteRepo;
     private final RecensioneRepository recensioneRepo;
 
-    /**
-     * Controlla tutti i badge disponibili e assegna all'utente quelli non ancora ottenuti
-     * la cui condizione di sblocco è soddisfatta:
-     * - se soglia_punti non è NULL → punteggio >= soglia_punti
-     * - se soglia_punti è NULL → vedi {@link #condizioneSpecialeSoddisfatta}
-     */
-    public void assegnaBadge(UtenteRegistrato utente) {
+    public void assegnaBadge(Long idUtente) {
+        UtenteRegistrato utente = utenteRepo.findById(idUtente).orElse(null);
+        if (utente == null) return;
 
         List<Badge> tuttiBadge = badgeRepo.findAll();
 
