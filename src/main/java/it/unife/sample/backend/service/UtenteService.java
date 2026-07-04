@@ -6,6 +6,8 @@ import it.unife.sample.backend.dao.ChatDao;
 import it.unife.sample.backend.dao.UtenteDao;
 import it.unife.sample.backend.dto.request.AggiornaUtenteRequest;
 import it.unife.sample.backend.dto.response.*;
+import it.unife.sample.backend.model.Notifica;
+import it.unife.sample.backend.model.UtenteRegistrato;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class UtenteService {
     private final BadgeDao badgeDao;
     private final AnnuncioDao annuncioDao;
     private final ChatDao chatDao;
+    private final NotificaService notificaService;
 
     public UtenteProfiloResponse getMe(Long idUtente) {
         return utenteDao.findProfiloById(idUtente)
@@ -59,5 +62,45 @@ public class UtenteService {
 
     public void visitaChat(Long idUtente) {
         utenteDao.updateUltimaVisitaChat(idUtente);
+    }
+
+    public List<UtenteAdminResponse> getAllAdmin() {
+        return utenteDao.findAllAdmin().stream()
+                .map(u -> new UtenteAdminResponse(
+                        u.getIdUtenteReg(),
+                        u.getNomeCompleto(),
+                        u.getEmail(),
+                        u.isBloccato(),
+                        u.getPunteggio(),
+                        new QuartiereResponse(
+                                u.getQuartiere().getIdQuartiere(),
+                                u.getQuartiere().getNomeQuartiere(),
+                                u.getQuartiere().getCitta()
+                        )
+                ))
+                .toList();
+    }
+
+    public UtenteAdminResponse blocca(Long id, boolean bloccato) {
+        UtenteRegistrato u = utenteDao.blocca(id, bloccato);
+        if (bloccato) {
+            notificaService.crea(id, Notifica.TipoNotifica.ACCOUNT_BLOCCATO,
+                    "Il tuo account è stato bloccato da un amministratore.");
+        } else {
+            notificaService.crea(id, Notifica.TipoNotifica.ACCOUNT_BLOCCATO,
+                    "Il tuo account è stato sbloccato da un amministratore.");
+        }
+        return new UtenteAdminResponse(
+                u.getIdUtenteReg(),
+                u.getNomeCompleto(),
+                u.getEmail(),
+                u.isBloccato(),
+                u.getPunteggio(),
+                new QuartiereResponse(
+                        u.getQuartiere().getIdQuartiere(),
+                        u.getQuartiere().getNomeQuartiere(),
+                        u.getQuartiere().getCitta()
+                )
+        );
     }
 }

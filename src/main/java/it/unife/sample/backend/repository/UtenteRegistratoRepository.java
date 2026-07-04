@@ -7,20 +7,23 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+// repository per l'accesso ai dati degli utenti registrati nel database: estende JpaRepository per fornire le operazioni CRUD di base
 public interface UtenteRegistratoRepository extends JpaRepository<UtenteRegistrato, Long> {
 
+    // trova un utente registrato per email
     Optional<UtenteRegistrato> findByEmail(String email);
 
+    // verifica se esiste un utente registrato con una determinata email
     boolean existsByEmail(String email);
 
-    // Leaderboard: tutti gli utenti ordinati per punteggio decrescente
+    // trova tutti gli utenti registrati ordinati per punteggio decrescente (per la leaderboard)
     @Query("SELECT u FROM UtenteRegistrato u ORDER BY u.punteggio DESC")
     List<UtenteRegistrato> findLeaderboard();
 
-    // Utenti di un quartiere — usato per calcolo CO₂ quartiere
+    // trova tutti gli utenti registrati appartenenti a un determinato quartiere
     List<UtenteRegistrato> findByQuartiere_IdQuartiere(Long idQuartiere);
 
-    // Numero di utenti con punteggio strettamente maggiore — 0 = primo in classifica
+    // conta il numero di utenti registrati con un punteggio maggiore di un determinato valore
     @Query("SELECT COUNT(u) FROM UtenteRegistrato u WHERE u.punteggio > :punteggio")
     long countConPunteggioMaggiore(@Param("punteggio") Integer punteggio);
 }

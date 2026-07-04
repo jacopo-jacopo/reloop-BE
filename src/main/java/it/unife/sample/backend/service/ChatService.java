@@ -26,6 +26,7 @@ public class ChatService {
     private final AnnuncioDao annuncioDao;
     private final BadgeService badgeService;
     private final ClimatiqService climatiqService;
+    private final NotificaService notificaService;
 
     private static final String CONFERMA_SUFFIX = "ha confermato che lo scambio è stato completato";
 
@@ -48,7 +49,12 @@ public class ChatService {
         if (!"aperta".equals(chat.getStatoChat())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chat non aperta");
         }
-        return messaggioDao.invia(idChat, idMittente, req.getContenuto());
+        MessaggioResponse risposta = messaggioDao.invia(idChat, idMittente, req.getContenuto());
+        Long idPubblicante = chat.getPropostaGenerante().getAnnuncioInteresse().getPubblicante().getIdUtenteReg();
+        Long idProponente  = chat.getPropostaGenerante().getProponente().getIdUtenteReg();
+        Long idAltro = idMittente.equals(idPubblicante) ? idProponente : idPubblicante;
+        notificaService.crea(idAltro, Notifica.TipoNotifica.NUOVO_MESSAGGIO, "Hai ricevuto un nuovo messaggio.");
+        return risposta;
     }
 
     public CompletaResponse completa(Long idChat, Long idUtente) {

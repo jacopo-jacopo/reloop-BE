@@ -17,11 +17,14 @@ public class AnnuncioService {
 
     private final AnnuncioDao annuncioDao;
 
-    public List<AnnuncioResponse> getAll(String cerca, String categoria, Long idQuartiere, Long idUtente) {
-        if (cerca != null)      return annuncioDao.cercaPerTitolo(cerca);
-        if (categoria != null)  return annuncioDao.cercaPerCategoria(categoria);
-        if (idQuartiere != null) return annuncioDao.findByQuartiere(idQuartiere, idUtente);
-        return annuncioDao.findAll();
+    public List<AnnuncioResponse> getAll(String cerca, String categoria, Long idQuartiere, Integer limit, Long idUtente) {
+        List<AnnuncioResponse> result;
+        if (cerca != null)           result = annuncioDao.cercaPerTitolo(cerca);
+        else if (categoria != null)  result = annuncioDao.cercaPerCategoria(categoria);
+        else if (idQuartiere != null) result = annuncioDao.findByQuartiere(idQuartiere, idUtente);
+        else                         result = annuncioDao.findAll();
+        if (limit != null && limit > 0) result = result.stream().limit(limit).toList();
+        return result;
     }
 
     public AnnuncioResponse getById(Long id) {

@@ -4,6 +4,7 @@ import it.unife.sample.backend.dao.SegnalazioneDao;
 import it.unife.sample.backend.dto.request.ChiudiSegnalazioneRequest;
 import it.unife.sample.backend.dto.request.InviaSegnalazioneRequest;
 import it.unife.sample.backend.dto.response.SegnalazioneResponse;
+import it.unife.sample.backend.model.Notifica;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.List;
 public class SegnalazioneService {
 
     private final SegnalazioneDao segnalazioneDao;
+    private final NotificaService notificaService;
 
     public List<SegnalazioneResponse> getTutte() {
         return segnalazioneDao.findAll();
@@ -37,6 +39,12 @@ public class SegnalazioneService {
     }
 
     public SegnalazioneResponse chiudi(Long idSegnalazione, ChiudiSegnalazioneRequest req, Long idAdmin) {
-        return segnalazioneDao.chiudi(idSegnalazione, req, idAdmin);
+        SegnalazioneResponse risposta = segnalazioneDao.chiudi(idSegnalazione, req, idAdmin);
+        if (req.isOscuraAnnuncio()) {
+            Long idProprietario = risposta.getAnnuncioSegnalato().getPubblicante().getIdUtenteReg();
+            notificaService.crea(idProprietario, Notifica.TipoNotifica.ANNUNCIO_ELIMINATO,
+                    "Il tuo annuncio \"" + risposta.getAnnuncioSegnalato().getTitolo() + "\" è stato oscurato a seguito di una segnalazione.");
+        }
+        return risposta;
     }
 }

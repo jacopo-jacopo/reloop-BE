@@ -1,5 +1,6 @@
 package it.unife.sample.backend.controller;
 
+import it.unife.sample.backend.dto.response.AdminStatsResponse;
 import it.unife.sample.backend.dto.response.StatsResponse;
 import it.unife.sample.backend.service.StatsService;
 import lombok.RequiredArgsConstructor;
@@ -22,5 +23,10 @@ public class StatsController {
     @GetMapping("/co2-quartiere")
     public BigDecimal getCo2Quartiere(@RequestParam Long quartiere) {
         return statsService.getCo2Quartiere(quartiere);
+    }
+
+    @GetMapping("/admin")
+    public AdminStatsResponse getAdmin() {
+        return statsService.getAdmin();
     }
 }

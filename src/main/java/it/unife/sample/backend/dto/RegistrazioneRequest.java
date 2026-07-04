@@ -5,30 +5,27 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-/**
- * DTO per la richiesta di registrazione di un nuovo utente.
- * I @JsonProperty mappano i campi snake_case del JSON ai campi camelCase Java.
- */
-@Data
+// DTO per la richiesta di registrazione: contiene i dati dell'utente da registrare, con le annotazioni per la validazione dei campi
+@Data // genera automaticamente i metodi getter, setter, equals, hashCode e toString per tutti i campi della classe
 public class RegistrazioneRequest {
 
-    @NotBlank
-    @JsonProperty("nome_completo")
+    @NotBlank // indica che il campo non può essere vuoto o nullo
+    @JsonProperty("nome_completo") // indica il nome del campo nel JSON della richiesta
     private String nomeCompleto;
 
-    @NotBlank
-    @JsonProperty("email")
+    @NotBlank // indica che il campo non può essere vuoto o nullo
+    @JsonProperty("email") // indica il nome del campo nel JSON della richiesta
     private String email;
 
-    @NotBlank
-    @JsonProperty("password")
+    @NotBlank // indica che il campo non può essere vuoto o nullo
+    @JsonProperty("password") // indica il nome del campo nel JSON della richiesta
     private String password;
 
-    @NotBlank
-    @JsonProperty("indirizzo")
+    @NotBlank // indica che il campo non può essere vuoto o nullo
+    @JsonProperty("indirizzo") // indica il nome del campo nel JSON della richiesta
     private String indirizzo;
 
-    @NotNull
-    @JsonProperty("id_quartiere")
+    @NotNull // indica che il campo non può essere vuoto o nullo
+    @JsonProperty("id_quartiere") // indica il nome del campo nel JSON della richiesta
     private Long idQuartiere;
 }

@@ -5,6 +5,7 @@ import it.unife.sample.backend.dao.RecensioneDao;
 import it.unife.sample.backend.dao.UtenteDao;
 import it.unife.sample.backend.dto.request.InviaRecensioneRequest;
 import it.unife.sample.backend.dto.response.RecensioneResponse;
+import it.unife.sample.backend.model.Notifica;
 import it.unife.sample.backend.model.UtenteRegistrato;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ public class RecensioneService {
     private final RecensioneDao recensioneDao;
     private final MessaggioDao messaggioDao;
     private final UtenteDao utenteDao;
+    private final NotificaService notificaService;
 
     private static final String RECENSIONE_SUFFIX = "ha lasciato una recensione";
 
@@ -35,6 +37,9 @@ public class RecensioneService {
                 messaggioDao.invia(req.getIdChat(), idRecensore, contenuto);
             }
         }
+
+        notificaService.crea(req.getIdUtenteRegRecensito(), Notifica.TipoNotifica.NUOVA_RECENSIONE,
+                "Hai ricevuto una nuova recensione.");
 
         return risposta;
     }

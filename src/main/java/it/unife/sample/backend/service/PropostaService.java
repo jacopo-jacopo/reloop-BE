@@ -9,6 +9,7 @@ import it.unife.sample.backend.dto.request.InviaPropostaRequest;
 import it.unife.sample.backend.dto.response.ChatResponse;
 import it.unife.sample.backend.dto.response.PropostaResponse;
 import it.unife.sample.backend.model.Annuncio;
+import it.unife.sample.backend.model.Notifica;
 import it.unife.sample.backend.model.Proposta;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,7 @@ public class PropostaService {
     private final AnnuncioDao annuncioDao;
     private final ChatDao chatDao;
     private final UtenteDao utenteDao;
+    private final NotificaService notificaService;
 
     public long getBadge(Long idUtente) {
         LocalDateTime ultimaVisita = utenteDao.getUltimaVisitaProposte(idUtente);
@@ -41,35 +43,38 @@ public class PropostaService {
     }
 
     public PropostaResponse invia(InviaPropostaRequest req, Long idUtente) {
-        return propostaDao.crea(req, idUtente);
+        PropostaResponse proposta = propostaDao.crea(req, idUtente);
+        Long idPubblicante = proposta.getAnnuncioInteresse().getPubblicante().getIdUtenteReg();
+        notificaService.crea(idPubblicante, Notifica.TipoNotifica.NUOVA_PROPOSTA,
+                "Hai ricevuto una nuova proposta per \"" + proposta.getAnnuncioInteresse().getTitolo() + "\".");
+        return proposta;
     }
 
     public ChatResponse accetta(Long idProposta, AccettaPropostaRequest req) {
         PropostaResponse proposta = propostaDao.findById(idProposta)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        // Accetta proposta e marca annuncio scelto
         propostaDao.updateStato(idProposta, Proposta.StatoProposta.accettata);
         propostaDao.accettaConAnnuncioScelto(idProposta, req.getIdAnnuncioScelto());
 
-        // Sospendi annuncio di interesse
         Long idInteresse = proposta.getAnnuncioInteresse().getIdAnnuncio();
         annuncioDao.updateStato(idInteresse, Annuncio.StatoAnnuncio.sospeso);
-
-        // Sospendi annuncio scelto
         annuncioDao.updateStato(req.getIdAnnuncioScelto(), Annuncio.StatoAnnuncio.sospeso);
 
-        // Rifiuta altre proposte in attesa che coinvolgono i due annunci
         propostaDao.rifiutaProposteInAttesaPerAnnunci(idInteresse, req.getIdAnnuncioScelto(), idProposta);
 
-        // Crea chat automaticamente
+        notificaService.crea(proposta.getProponente().getIdUtenteReg(), Notifica.TipoNotifica.PROPOSTA_ACCETTATA,
+                "La tua proposta per \"" + proposta.getAnnuncioInteresse().getTitolo() + "\" è stata accettata!");
+
         return chatDao.crea(idProposta);
     }
 
     public PropostaResponse rifiuta(Long idProposta) {
-        if (propostaDao.findById(idProposta).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-        return propostaDao.updateStato(idProposta, Proposta.StatoProposta.rifiutata);
+        PropostaResponse proposta = propostaDao.findById(idProposta)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        PropostaResponse aggiornata = propostaDao.updateStato(idProposta, Proposta.StatoProposta.rifiutata);
+        notificaService.crea(proposta.getProponente().getIdUtenteReg(), Notifica.TipoNotifica.PROPOSTA_RIFIUTATA,
+                "La tua proposta per \"" + proposta.getAnnuncioInteresse().getTitolo() + "\" è stata rifiutata.");
+        return aggiornata;
     }
 }

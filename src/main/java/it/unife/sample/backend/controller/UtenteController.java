@@ -1,6 +1,7 @@
 package it.unife.sample.backend.controller;
 
 import it.unife.sample.backend.dto.request.AggiornaUtenteRequest;
+import it.unife.sample.backend.dto.request.BloccaUtenteRequest;
 import it.unife.sample.backend.dto.response.*;
 import it.unife.sample.backend.service.UtenteService;
 import lombok.RequiredArgsConstructor;
@@ -66,5 +67,17 @@ public class UtenteController {
     public ResponseEntity<Void> visitaChat(@RequestHeader("X-User-Id") Long idUtente) {
         utenteService.visitaChat(idUtente);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    public List<UtenteAdminResponse> getAllAdmin() {
+        return utenteService.getAllAdmin();
+    }
+
+    @PutMapping("/{id}/blocca")
+    public ResponseEntity<UtenteAdminResponse> blocca(
+            @PathVariable Long id,
+            @RequestBody BloccaUtenteRequest req) {
+        return ResponseEntity.ok(utenteService.blocca(id, req.isBloccato()));
     }
 }

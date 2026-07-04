@@ -11,9 +11,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/annunci")
-@RequiredArgsConstructor
+// controller per la gestione degli annunci: espone le API REST per le CRUD sugli annunci
+@RestController // indica che questa classe è un controller REST, gestito da Spring
+@RequestMapping("/api/annunci") // mappa tutte le richieste HTTP che iniziano con /api/annunci a questo controller
+@RequiredArgsConstructor // genera un costruttore con un parametro per ogni campo finale non inizializzato (in questo caso, annuncioService)
 public class AnnuncioController {
 
     private final AnnuncioService annuncioService;
@@ -23,8 +24,9 @@ public class AnnuncioController {
             @RequestParam(required = false) String cerca,
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) Long quartiere,
+            @RequestParam(required = false) Integer limit,
             @RequestHeader("X-User-Id") Long idUtente) {
-        return annuncioService.getAll(cerca, categoria, quartiere, idUtente);
+        return annuncioService.getAll(cerca, categoria, quartiere, limit, idUtente);
     }
 
     @GetMapping("/{id}")
