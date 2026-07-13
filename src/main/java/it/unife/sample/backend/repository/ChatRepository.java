@@ -8,10 +8,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+// repository per l'accesso ai dati delle chat nel database: estende JpaRepository per fornire le operazioni CRUD di base
 public interface ChatRepository extends JpaRepository<Chat, Long> {
 
-    Optional<Chat> findByPropostaGenerante_IdProposta(Long idProposta);
+    Optional<Chat> findByPropostaGenerante_IdProposta(Long idProposta); // trova una chat in base all'id della proposta generante
 
+    // trova tutte le chat a cui un utente ha partecipato (come proponente o pubblicante),
+    // ordinate per data dell'ultimo messaggio o della creazione della chat
     @Query(value = """
         SELECT c.* FROM interazione_chat c
         INNER JOIN proposta p ON c.id_proposta_generante = p.id_proposta
@@ -25,7 +28,8 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     """, nativeQuery = true)
     List<Chat> findByUtente(@Param("idUtente") Long idUtente);
 
-    /** Chat senza messaggi create dopo l'ultima visita alla sezione (null = tutte). */
+    // trova tutte le chat a cui un utente ha partecipato (come proponente o pubblicante) che non hanno messaggi,
+    // e che sono state create dopo l'ultima visita dell'utente (se specificata)
     @Query(value = """
         SELECT c.id_chat
         FROM interazione_chat c
@@ -36,13 +40,12 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
           AND NOT EXISTS (SELECT 1 FROM messaggio m WHERE m.id_chat = c.id_chat)
           AND (:ultimaVisita IS NULL OR c.timestamp_chat > :ultimaVisita)
     """, nativeQuery = true)
-    List<Long> findVuoteByUtente(
-        @Param("idUtente") Long idUtente,
-        @Param("ultimaVisita") LocalDateTime ultimaVisita);
+    List<Long> findVuoteByUtente(@Param("idUtente") Long idUtente, @Param("ultimaVisita") LocalDateTime ultimaVisita);
 
-    long countByStatoChat(Chat.StatoChat stato);
 
-    /** Numero di scambi completati a cui l'utente ha partecipato (come pubblicante o proponente). */
+    long countByStatoChat(Chat.StatoChat stato); // conta il numero di chat con un determinato stato
+
+    // trova tutte le chat a cui un utente ha partecipato e che sono state completate
     @Query(value = """
         SELECT COUNT(*) FROM interazione_chat c
         INNER JOIN proposta p ON c.id_proposta_generante = p.id_proposta
@@ -52,7 +55,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     """, nativeQuery = true)
     long countCompletateByUtente(@Param("idUtente") Long idUtente);
 
-    /** Chat aperte la cui proposta generante coinvolge questo annuncio (come interesse o tra gli offerti). */
+    // trova tutte le chat aperte che coinvolgono un annuncio specifico, sia come annuncio di interesse che come annuncio offerto
     @Query(value = """
         SELECT DISTINCT c.* FROM interazione_chat c
         INNER JOIN proposta p ON c.id_proposta_generante = p.id_proposta

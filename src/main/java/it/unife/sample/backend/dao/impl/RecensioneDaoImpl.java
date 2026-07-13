@@ -12,19 +12,22 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
-@RequiredArgsConstructor
+// implementazione dell'interfaccia RecensioneDao: fornisce i metodi per l'accesso ai dati delle recensioni nel database
+@Repository // indica che questa classe è un componente di tipo repository, gestito da Spring
+@RequiredArgsConstructor // genera un costruttore con un parametro per ogni campo finale non inizializzato (in questo caso, recensioneRepo e utenteRepo)
 public class RecensioneDaoImpl implements RecensioneDao {
 
     private final RecensioneRepository recensioneRepo;
     private final UtenteRegistratoRepository utenteRepo;
 
+    // trova tutte le recensioni ricevute da un utente
     @Override
     public List<RecensioneResponse> findByRecensito(Long idUtente) {
         return recensioneRepo.findById_IdUtenteRegRecensito(idUtente).stream()
                 .map(this::toResponse).toList();
     }
 
+    // salva una nuova recensione nel database
     @Override
     public RecensioneResponse salva(InviaRecensioneRequest req, Long idRecensore) {
         UtenteRegistrato recensore = utenteRepo.findById(idRecensore)
@@ -46,8 +49,8 @@ public class RecensioneDaoImpl implements RecensioneDao {
         return toResponse(recensioneRepo.save(r));
     }
 
-    // --- mapping ---
-
+    
+    // metodo privato per convertire un oggetto Recensione in un oggetto RecensioneResponse
     private RecensioneResponse toResponse(Recensione r) {
         RecensioneResponse.RecensoreResponse recensore = new RecensioneResponse.RecensoreResponse(
                 r.getRecensore().getIdUtenteReg(),

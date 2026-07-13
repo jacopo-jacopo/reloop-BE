@@ -13,11 +13,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 
-/**
- * Verifica e assegna i badge a un utente in base alle sue statistiche attuali.
- */
-@Service
-@RequiredArgsConstructor
+// service per la gestione dei badge: fornisce metodi per assegnare badge agli utenti in base al loro punteggio, recensioni e risparmio di CO2
+@Service // indica che questa classe è un componente di tipo service, gestito da Spring
+@RequiredArgsConstructor // genera un costruttore con un parametro per ogni campo finale non inizializzato
 public class BadgeService {
 
     private final BadgeRepository badgeRepo;
@@ -25,6 +23,7 @@ public class BadgeService {
     private final UtenteRegistratoRepository utenteRepo;
     private final RecensioneRepository recensioneRepo;
 
+    // metodo per assegnare i badge a un utente
     public void assegnaBadge(Long idUtente) {
         UtenteRegistrato utente = utenteRepo.findById(idUtente).orElse(null);
         if (utente == null) return;
@@ -61,8 +60,7 @@ public class BadgeService {
 
     /**
      * Condizione di sblocco per i badge con soglia_punti NULL.
-     * Ogni badge ha una query/condizione dedicata e scritta a mano: quando se ne
-     * aggiungono di nuovi va aggiunto un nuovo case qui.
+     * Ogni badge ha una query/condizione dedicata e scritta a mano.
      */
     private boolean condizioneSpecialeSoddisfatta(String nomeBadge, UtenteRegistrato utente) {
         return switch (nomeBadge) {
@@ -79,7 +77,7 @@ public class BadgeService {
             case "Punto di riferimento" -> {
                 long totali = recensioneRepo.countById_IdUtenteRegRecensito(utente.getIdUtenteReg());
                 Double media = recensioneRepo.mediaVotoById_IdUtenteRegRecensito(utente.getIdUtenteReg());
-                yield totali > 10 && media != null && media > 4;
+                yield totali > 10 && media != null && media > 4; // yield è come il return ma per i case degli switch
             }
 
             // "Risparmia 30kg di CO2!"
@@ -98,7 +96,7 @@ public class BadgeService {
                         && utente.getCo2Totale().compareTo(new BigDecimal("500")) > 0;
             }
 
-            // Badge senza soglia_punti e senza condizione ancora definita: non sbloccabile
+            // per badge senza soglia_punti e senza condizione ancora definita (non sbloccabili)
             default -> false;
         };
     }

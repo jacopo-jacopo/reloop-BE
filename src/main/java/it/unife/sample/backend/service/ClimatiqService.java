@@ -15,16 +15,18 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Calcola la CO₂ risparmiata da uno scambio interrogando l'API Climatiq.
+ * Calcola la CO2 risparmiata da uno scambio interrogando l'API Climatiq.
  * Per ogni categoria di annuncio viene cercato un emission factor "a spesa"
  * (unit_type Money) e poi usato per stimare il co2e corrispondente al
  * valore stimato dell'oggetto scambiato.
  */
-@Slf4j
-@Service
+
+// service per la stima della CO2 risparmiata da uno scambio, interrogando l'API Climatiq
+@Slf4j // aggiunge un logger alla classe, utile per registrare messaggi di log durante l'esecuzione del servizio
+@Service // indica che questa classe è un componente di tipo service, gestito da Spring
 public class ClimatiqService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = new RestTemplate(); // oggetto per effettuare richieste HTTP verso l'API Climatiq
 
     @Value("${climatiq.api-key:}")
     private String apiKey;
@@ -33,7 +35,7 @@ public class ClimatiqService {
     private static final String ESTIMATE_URL = "https://api.climatiq.io/data/v1/estimate";
     private static final String DATA_VERSION = "^26";
 
-    // Termine di ricerca Climatiq (in inglese) per ciascuna categoria di annuncio reloop
+    // termine di ricerca Climatiq (in inglese) per ciascuna categoria di annuncio reloop
     private static final Map<String, String> QUERY_PER_CATEGORIA = Map.of(
             "Arredamento",          "furniture",
             "Abbigliamento",        "clothing",
@@ -45,12 +47,13 @@ public class ClimatiqService {
     );
 
     /**
-     * Stima la CO₂ (in kg) risparmiata riutilizzando un bene di seconda mano
+     * Stima la CO2 (in kg) risparmiata riutilizzando un bene di seconda mano
      * della categoria e del valore stimato indicati.
      *
      * @return il valore di co2e stimato, oppure {@link Optional#empty()} se
      *         la chiamata a Climatiq fallisce o non è configurata una API key.
      */
+    @SuppressWarnings("unchecked") // per evitare warning di cast da Map<String, Object> a Map<String, Object>
     public Optional<BigDecimal> stimaCo2Risparmiata(String categoria, BigDecimal prezzoStimato) {
         if (apiKey == null || apiKey.isBlank()) {
             log.warn("Climatiq API key non configurata, salto la chiamata.");
@@ -59,11 +62,11 @@ public class ClimatiqService {
 
         try {
             String query = QUERY_PER_CATEGORIA.getOrDefault(categoria, "consumer goods");
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(apiKey);
+            HttpHeaders headers = new HttpHeaders(); // oggetto per impostare gli header della richiesta HTTP verso l'API Climatiq
+            headers.setBearerAuth(apiKey); // imposta l'header Authorization con il token Bearer per autenticarsi all'API Climatiq
 
-            // 1. Cerca un emission factor "a spesa" (Money) per la categoria
-            String searchUrl = UriComponentsBuilder.fromHttpUrl(SEARCH_URL)
+            // 1: cerca un emission factor "a spesa" (Money) per la categoria
+            String searchUrl = UriComponentsBuilder.fromUriString(SEARCH_URL)
                     .queryParam("query", query)
                     .queryParam("unit_type", "Money")
                     .queryParam("region", "IT")
@@ -71,7 +74,7 @@ public class ClimatiqService {
                     .queryParam("data_version", DATA_VERSION)
                     .toUriString();
 
-            Map<String, Object> searchResponse = restTemplate.exchange(
+            Map<String, Object> searchResponse = restTemplate.exchange( // restTemplate è come HttpClient in Angular
                     searchUrl, HttpMethod.GET, new HttpEntity<>(headers), Map.class).getBody();
 
             if (searchResponse == null) return Optional.empty();
@@ -82,10 +85,11 @@ public class ClimatiqService {
             }
             String emissionFactorId = (String) results.get(0).get("id");
 
-            // 2. Stima il co2e corrispondente al valore dell'oggetto
+            // 2: stima la co2e corrispondente al valore dell'oggetto
             HttpHeaders estimateHeaders = new HttpHeaders();
             estimateHeaders.setBearerAuth(apiKey);
-            estimateHeaders.setContentType(MediaType.APPLICATION_JSON);
+            estimateHeaders.setContentType(MediaType.APPLICATION_JSON); // imposta l'header Content-Type a application/json per indicare 
+                                                                        // che il corpo della richiesta è in formato JSON
 
             Map<String, Object> body = Map.of(
                     "emission_factor", Map.of("id", emissionFactorId),

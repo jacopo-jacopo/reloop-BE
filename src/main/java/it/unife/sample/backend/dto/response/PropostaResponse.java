@@ -7,8 +7,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
-@AllArgsConstructor
+// DTO per la risposta delle proposte: 
+// contiene le informazioni principali di una proposta, inclusi i dettagli del proponente, dell'annuncio di interesse e degli annunci offerti
+@Data // genera automaticamente i metodi getter, setter, toString, equals e hashCode per tutti i campi della classe
+@AllArgsConstructor // genera automaticamente un costruttore con un parametro per ogni campo della classe
 public class PropostaResponse {
 
     private Long idProposta;
@@ -18,6 +20,7 @@ public class PropostaResponse {
     private AnnuncioInteresseSummary annuncioInteresse;
     private List<AnnuncioInclusoSummary> annunciOfferti;
 
+    // classe interna per rappresentare un riassunto dell'utente proponente della proposta
     @Data
     @AllArgsConstructor
     public static class UtentePropostaSummary {
@@ -26,6 +29,7 @@ public class PropostaResponse {
         private String fotoProfilo;
     }
 
+    // classe interna per rappresentare un riassunto dell'annuncio di interesse della proposta
     @Data
     @AllArgsConstructor
     public static class AnnuncioInteresseSummary {
@@ -35,6 +39,7 @@ public class PropostaResponse {
         private UtentePropostaSummary pubblicante;
     }
 
+    // classe interna per rappresentare un riassunto di un annuncio incluso nella proposta
     @Data
     @AllArgsConstructor
     public static class AnnuncioInclusoSummary {
@@ -43,6 +48,7 @@ public class PropostaResponse {
         private AnnuncioOffertoSummary annuncioOfferto;
     }
 
+    // classe interna per rappresentare un DTO contenente gli ID di una proposta e di un annuncio offerto
     @Data
     @AllArgsConstructor
     public static class AnnuncioInclusoIdDto {
@@ -50,6 +56,7 @@ public class PropostaResponse {
         private Long idAnnuncioOfferto;
     }
 
+    // classe interna per rappresentare un riassunto di un annuncio offerto nella proposta
     @Data
     @AllArgsConstructor
     public static class AnnuncioOffertoSummary {

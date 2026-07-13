@@ -4,53 +4,31 @@ import it.unife.sample.backend.model.Annuncio;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
-/**
- * Repository JPA per l'entità Annuncio.
- * Spring Data genera automaticamente le query dai nomi dei metodi.
- */
+// repository per l'accesso ai dati degli annunci nel database: estende JpaRepository per fornire le operazioni CRUD di base
 public interface AnnuncioRepository extends JpaRepository<Annuncio, Long> {
 
-    /**
-     * Trova tutti gli annunci di un utente specifico (per il profilo personale).
-     * Restituisce tutti gli stati (attivo, sospeso, chiuso).
-     */
+    // trova tutti gli annunci pubblicati da un utente specifico
     List<Annuncio> findByPubblicante_IdUtenteReg(Long idUtente);
 
-    /**
-     * Trova gli annunci di un quartiere specifico con un dato stato,
-     * escludendo quelli dell'utente loggato.
-     * Usato dalla pagina Annunci: mostra solo annunci altrui nel proprio quartiere.
-     */
+    // trova tutti gli annunci di un quartiere specifico, con stato attivo e pubblicati da utenti diversi da quello specificato
     List<Annuncio> findByPubblicante_Quartiere_IdQuartiereAndStatoAnnuncioAndPubblicante_IdUtenteRegNot(
         Long idQuartiere,
         Annuncio.StatoAnnuncio stato,
         Long idUtenteEscluso
     );
 
-    /**
-     * Trova tutti gli annunci di un quartiere (senza filtro stato né utente).
-     * Usato internamente per calcoli aggregati come la CO₂.
-     */
+    // trova tutti gli annunci di un quartiere specifico
     List<Annuncio> findByPubblicante_Quartiere_IdQuartiere(Long idQuartiere);
 
-    /**
-     * Ricerca testuale nel titolo (case-insensitive).
-     * Usato dalla barra di ricerca nella pagina annunci.
-     */
+    // trova tutti gli annunci con un titolo che contiene una determinata stringa (case-insensitive, match parziale)
     List<Annuncio> findByTitoloContainingIgnoreCase(String titolo);
 
-    /**
-     * Ricerca per categoria (case-insensitive, match parziale).
-     */
+    // trova tutti gli annunci con una categoria che contiene una determinata stringa (case-insensitive, match parziale)
     List<Annuncio> findByCategoriaContainingIgnoreCase(String categoria);
 
-    /**
-     * Filtra per stato — usato dallo StatsController per contare gli annunci attivi.
-     */
+    // trova tutti gli annunci con un determinato stato (ad esempio, attivo, completato, ecc.)
     List<Annuncio> findByStatoAnnuncio(Annuncio.StatoAnnuncio stato);
 
-    /**
-     * Conta gli annunci per stato — usato dalle statistiche pubbliche.
-     */
+    // conta il numero di annunci con un determinato stato (ad esempio, attivo, completato, ecc.)
     long countByStatoAnnuncio(Annuncio.StatoAnnuncio stato);
 }

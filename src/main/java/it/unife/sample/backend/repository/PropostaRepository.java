@@ -7,10 +7,17 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// interfaccia per l'accesso ai dati delle proposte: estende JpaRepository per fornire metodi CRUD e query personalizzate per le entità Proposta
 public interface PropostaRepository extends JpaRepository<Proposta, Long> {
-    List<Proposta> findByAnnuncioInteresse_Pubblicante_IdUtenteRegOrderByTimestampPropostaDesc(Long idUtente);
+    
+    // trova tutte le proposte ricevute da un utente (come pubblicante) ordinate per data di creazione decrescente
+    List<Proposta> findByAnnuncioInteresse_Pubblicante_IdUtenteRegOrderByTimestampPropostaDesc(Long idUtente); 
+    
+    // trova tutte le proposte inviate da un utente (come proponente) ordinate per data di creazione decrescente
     List<Proposta> findByProponente_IdUtenteRegOrderByTimestampPropostaDesc(Long idUtente);
-    /** Proposte in_attesa ricevute dopo l'ultima visita (null = nessuna visita → conta tutto). */
+
+    // conta il numero di nuove proposte ricevute da un utente (come pubblicante) che sono in stato "in_attesa"
+    // e che sono state create dopo l'ultima visita dell'utente (se specificata)
     @Query(value = """
         SELECT COUNT(*) FROM proposta p
         INNER JOIN annuncio a ON p.id_annuncio_interesse = a.id_annuncio
@@ -18,15 +25,15 @@ public interface PropostaRepository extends JpaRepository<Proposta, Long> {
           AND p.stato_proposta = 'in_attesa'
           AND (:ultimaVisita IS NULL OR p.timestamp_proposta > :ultimaVisita)
     """, nativeQuery = true)
-    long countNuoveProposteRicevute(
-        @Param("idUtente") Long idUtente,
-        @Param("ultimaVisita") LocalDateTime ultimaVisita);
+    long countNuoveProposteRicevute(@Param("idUtente") Long idUtente, @Param("ultimaVisita") LocalDateTime ultimaVisita);
 
-    /** Proposte in_attesa che hanno questo annuncio come annuncio_interesse, esclusa quella già gestita. */
+    // trova tutte le proposte che hanno un determinato annuncio come annuncio di interesse, in uno stato specifico,
+    // e che non corrispondono a un id di proposta specifica
     List<Proposta> findByAnnuncioInteresse_IdAnnuncioAndStatoPropostaAndIdPropostaNot(
         Long idAnnuncio, Proposta.StatoProposta stato, Long idPropostaEsclusa);
 
-    /** Proposte in_attesa che hanno questo annuncio tra gli annunci_offerti, esclusa quella già gestita. */
+    // trova tutte le proposte che hanno un determinato annuncio come annuncio offerto, in stato "in_attesa",
+    // e che non corrispondono a un id di proposta specifica
     @Query("""
         SELECT DISTINCT ai.proposta FROM AnnuncioIncluso ai
         WHERE ai.annuncioOfferto.idAnnuncio = :idAnnuncio
@@ -37,19 +44,18 @@ public interface PropostaRepository extends JpaRepository<Proposta, Long> {
         @Param("idAnnuncio") Long idAnnuncio,
         @Param("idPropostaEsclusa") Long idPropostaEsclusa);
 
-    /** Proposte in un dato stato che hanno questo annuncio come annuncio_interesse. */
+    // trova tutte le proposte in un dato stato che hanno questo annuncio come annuncio di interesse
     List<Proposta> findByAnnuncioInteresse_IdAnnuncioAndStatoProposta(
         Long idAnnuncio, Proposta.StatoProposta stato);
 
-    /** Proposte in un dato stato che hanno questo annuncio tra gli annunci_offerti. */
+    // trova tutte le proposte in un dato stato che hanno un certo annuncio tra quelli offerti
     @Query("""
         SELECT DISTINCT ai.proposta FROM AnnuncioIncluso ai
         WHERE ai.annuncioOfferto.idAnnuncio = :idAnnuncio
         AND ai.proposta.statoProposta = :stato
     """)
-    List<Proposta> findByAnnuncioOffertoAndStatoProposta(
-        @Param("idAnnuncio") Long idAnnuncio,
-        @Param("stato") Proposta.StatoProposta stato);
+    List<Proposta> findByAnnuncioOffertoAndStatoProposta(@Param("idAnnuncio") Long idAnnuncio, @Param("stato") Proposta.StatoProposta stato);
 
+    // conta il numero totale di proposte nel database
     long count();
 }

@@ -11,8 +11,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
-@RequiredArgsConstructor
+// implementazione dell'interfaccia SegnalazioneDao: fornisce i metodi per l'accesso ai dati delle segnalazioni nel database
+@Repository // indica che questa classe è un componente di tipo repository, gestito da Spring
+@RequiredArgsConstructor // genera un costruttore con un parametro per ogni campo finale non inizializzato (in questo caso, i repository)
 public class SegnalazioneDaoImpl implements SegnalazioneDao {
 
     private final SegnalazioneRepository segnalazioneRepo;
@@ -24,20 +25,22 @@ public class SegnalazioneDaoImpl implements SegnalazioneDao {
     private final ChatRepository chatRepo;
     private final MessaggioRepository messaggioRepo;
 
-    private static final String OSCURAMENTO_SUFFIX =
-            "è stato rimosso da un amministratore e non è più disponibile.";
+    private static final String OSCURAMENTO_SUFFIX = "è stato rimosso da un amministratore e non è più disponibile.";
 
+    // trova tutte le segnalazioni presenti nel db
     @Override
     public List<SegnalazioneResponse> findAll() {
         return segnalazioneRepo.findAll().stream().map(this::toResponse).toList();
     }
 
+    // trova tutte le segnalazioni aperte da un utente specifico
     @Override
     public List<SegnalazioneResponse> findByUtente(Long idUtente) {
         return segnalazioneRepo.findBySegnalante_IdUtenteReg(idUtente).stream()
                 .map(this::toResponse).toList();
     }
 
+    // crea una nuova segnalazione e la salva nel db
     @Override
     public SegnalazioneResponse crea(InviaSegnalazioneRequest req, Long idUtente) {
         Annuncio annuncio = annuncioRepo.findById(req.getIdAnnuncioSegnalato())
@@ -54,6 +57,7 @@ public class SegnalazioneDaoImpl implements SegnalazioneDao {
         return toResponse(segnalazioneRepo.save(s));
     }
 
+    // segna una segnalazione come presa in carico da un amministratore
     @Override
     public SegnalazioneResponse prendiInCarico(Long idSegnalazione, Long idAdmin) {
         Segnalazione s = segnalazioneRepo.findById(idSegnalazione)
@@ -63,6 +67,7 @@ public class SegnalazioneDaoImpl implements SegnalazioneDao {
         return toResponse(segnalazioneRepo.save(s));
     }
 
+    // chiude una segnalazione e, se richiesto, oscura l'annuncio segnalato
     @Override
     public SegnalazioneResponse chiudi(Long idSegnalazione, ChiudiSegnalazioneRequest req, Long idAdmin) {
         Segnalazione s = segnalazioneRepo.findById(idSegnalazione)
@@ -92,6 +97,7 @@ public class SegnalazioneDaoImpl implements SegnalazioneDao {
         return toResponse(segnalazioneRepo.save(s));
     }
 
+    // verifica se esiste una segnalazione non chiusa per un utente e un annuncio specifici
     @Override
     public boolean existsSegnalazioneAperta(Long idUtente, Long idAnnuncio) {
         return segnalazioneRepo
@@ -99,6 +105,8 @@ public class SegnalazioneDaoImpl implements SegnalazioneDao {
                         idUtente, idAnnuncio, Segnalazione.StatoSegnalazione.chiusa);
     }
 
+    // gestisce l'oscuramento di un annuncio: 
+    // chiude le proposte in attesa, annulla le chat aperte e invia un messaggio di sistema agli utenti coinvolti
     private void gestisciOscuramento(Annuncio annuncio) {
         Long idAnnuncio = annuncio.getIdAnnuncio();
 
@@ -123,11 +131,12 @@ public class SegnalazioneDaoImpl implements SegnalazioneDao {
             proposta.getAnnunciOfferti().stream()
                     .filter(AnnuncioIncluso::getFlagSelezionato)
                     .map(AnnuncioIncluso::getAnnuncioOfferto)
-                    .filter(ann -> !ann.getIdAnnuncio().equals(idAnnuncio))
-                    .filter(ann -> ann.getStatoAnnuncio() == Annuncio.StatoAnnuncio.sospeso)
-                    .forEach(ann -> {
-                        ann.setStatoAnnuncio(Annuncio.StatoAnnuncio.attivo);
-                        annuncioRepo.save(ann);
+                    .findFirst()
+                    .ifPresent(ann -> {
+                        if (!ann.getIdAnnuncio().equals(idAnnuncio) && ann.getStatoAnnuncio() == Annuncio.StatoAnnuncio.sospeso) {
+                            ann.setStatoAnnuncio(Annuncio.StatoAnnuncio.attivo);
+                            annuncioRepo.save(ann);
+                        }
                     });
 
             Long maxId = messaggioRepo.findMaxIdByIdChat(chat.getIdChat());
@@ -144,8 +153,9 @@ public class SegnalazioneDaoImpl implements SegnalazioneDao {
         }
     }
 
-    // --- mapping ---
 
+
+    // mapping da oggetto Segnalazione a oggetto SegnalazioneResponse
     private SegnalazioneResponse toResponse(Segnalazione s) {
         Annuncio ann = s.getAnnuncioSegnalato();
         SegnalazioneResponse.AutoreSummary autore = new SegnalazioneResponse.AutoreSummary(

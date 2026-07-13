@@ -18,8 +18,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-@Repository
-@RequiredArgsConstructor
+// implementazione dell'interfaccia PropostaDao: fornisce i metodi per l'accesso ai dati delle proposte nel database
+@Repository // indica che questa classe è un componente di tipo repository, gestito da Spring
+@RequiredArgsConstructor // genera un costruttore con un parametro per ogni campo finale non inizializzato (in questo caso, i repository)
 public class PropostaDaoImpl implements PropostaDao {
 
     private final PropostaRepository propostaRepo;
@@ -27,28 +28,33 @@ public class PropostaDaoImpl implements PropostaDao {
     private final AnnuncioRepository annuncioRepo;
     private final UtenteRegistratoRepository utenteRepo;
 
+    // trova tutte le proposte ricevute da un utente specifico
     @Override
     public List<PropostaResponse> findRicevute(Long idUtente) {
         return propostaRepo.findByAnnuncioInteresse_Pubblicante_IdUtenteRegOrderByTimestampPropostaDesc(idUtente)
                 .stream().map(this::toResponse).toList();
     }
 
+    // trova tutte le proposte inviate da un utente specifico
     @Override
     public List<PropostaResponse> findInviate(Long idUtente) {
         return propostaRepo.findByProponente_IdUtenteRegOrderByTimestampPropostaDesc(idUtente)
                 .stream().map(this::toResponse).toList();
     }
 
+    // restituisce il numero di proposte ricevute da un utente specifico che sono state create dopo l'ultima visita dell'utente
     @Override
     public long countNuoveRicevute(Long idUtente, java.time.LocalDateTime ultimaVisita) {
         return propostaRepo.countNuoveProposteRicevute(idUtente, ultimaVisita);
     }
 
+    // restituisce una proposta specifica in base al suo ID, se esiste
     @Override
     public Optional<PropostaResponse> findById(Long id) {
         return propostaRepo.findById(id).map(this::toResponse);
     }
 
+    // crea una proposta e la salva nel database
     @Override
     public PropostaResponse crea(InviaPropostaRequest req, Long idProponente) {
         Annuncio interesse = annuncioRepo.findById(req.getIdAnnuncioInteresse())
@@ -80,6 +86,7 @@ public class PropostaDaoImpl implements PropostaDao {
         return toResponse(propostaRepo.findById(salvata.getIdProposta()).orElseThrow());
     }
 
+    // aggiorna lo stato di una proposta specifica
     @Override
     public PropostaResponse updateStato(Long idProposta, Proposta.StatoProposta stato) {
         Proposta p = propostaRepo.findById(idProposta)
@@ -88,6 +95,7 @@ public class PropostaDaoImpl implements PropostaDao {
         return toResponse(propostaRepo.save(p));
     }
 
+    // aggiorna lo stato di una proposta specifica e seleziona un annuncio offerto come scelto
     @Override
     public void accettaConAnnuncioScelto(Long idProposta, Long idAnnuncioScelto) {
         annuncioInclusoRepo.findById_IdProposta(idProposta).forEach(ai -> {
@@ -96,9 +104,10 @@ public class PropostaDaoImpl implements PropostaDao {
         });
     }
 
+    // rifiuta tutte le proposte in attesa che coinvolgono due annunci specifici, escludendo una proposta specifica
     @Override
     public void rifiutaProposteInAttesaPerAnnunci(Long idAnnuncio1, Long idAnnuncio2, Long idPropostaEsclusa) {
-        // Proposte dove annuncioInteresse = annuncio1 o annuncio2 (esclusa quella accettata)
+        // proposte dove annuncioInteresse = annuncio1 o annuncio2 (esclusa quella accettata)
         Stream.concat(
             propostaRepo.findByAnnuncioInteresse_IdAnnuncioAndStatoPropostaAndIdPropostaNot(
                     idAnnuncio1, Proposta.StatoProposta.in_attesa, idPropostaEsclusa).stream(),
@@ -109,7 +118,7 @@ public class PropostaDaoImpl implements PropostaDao {
             propostaRepo.save(p);
         });
 
-        // Proposte dove annuncioOfferto = annuncio1 o annuncio2 (esclusa quella accettata)
+        // proposte dove annuncioOfferto = annuncio1 o annuncio2 (esclusa quella accettata)
         Stream.concat(
             propostaRepo.findInAttesaByAnnuncioOfferto(idAnnuncio1, idPropostaEsclusa).stream(),
             propostaRepo.findInAttesaByAnnuncioOfferto(idAnnuncio2, idPropostaEsclusa).stream()
@@ -119,6 +128,7 @@ public class PropostaDaoImpl implements PropostaDao {
         });
     }
 
+    // rifiuta tutte le proposte in attesa che coinvolgono un annuncio specifico
     @Override
     public void rifiutaProposteInAttesaPerAnnuncio(Long idAnnuncio) {
         propostaRepo.findByAnnuncioInteresse_IdAnnuncioAndStatoProposta(
@@ -129,7 +139,9 @@ public class PropostaDaoImpl implements PropostaDao {
                 .forEach(p -> { p.setStatoProposta(Proposta.StatoProposta.rifiutata); propostaRepo.save(p); });
     }
 
-    // --- mapping ---
+
+
+    // metodi di mappatura tra entità e DTO di risposta
 
     PropostaResponse toResponse(Proposta p) {
         List<PropostaResponse.AnnuncioInclusoSummary> offerti = p.getAnnunciOfferti().stream()

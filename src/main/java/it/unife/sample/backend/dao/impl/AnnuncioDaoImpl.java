@@ -18,19 +18,25 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
-@RequiredArgsConstructor
+// implementazione dell'interfaccia AnnuncioDao: fornisce i metodi per l'accesso ai dati degli annunci nel database
+@Repository // indica che questa classe è un componente di tipo repository, gestito da Spring
+@RequiredArgsConstructor // genera un costruttore con un parametro per ogni campo finale non inizializzato (in questo caso, annuncioRepo, fotoRepo e utenteRepo)
 public class AnnuncioDaoImpl implements AnnuncioDao {
 
     private final AnnuncioRepository annuncioRepo;
     private final FotoRepository fotoRepo;
     private final UtenteRegistratoRepository utenteRepo;
 
+
+    // implementazione dei metodi dell'interfaccia AnnuncioDao
+
     @Override
     public List<AnnuncioResponse> findByQuartiere(Long idQuartiere, Long idUtenteEscluso) {
         return annuncioRepo.findByPubblicante_Quartiere_IdQuartiereAndStatoAnnuncioAndPubblicante_IdUtenteRegNot(
                 idQuartiere, Annuncio.StatoAnnuncio.attivo, idUtenteEscluso)
-                .stream().map(this::toResponse).toList();
+                .stream()
+                .map(this::toResponse) // mappa ogni oggetto Annuncio in un oggetto AnnuncioResponse usando il metodo privato toResponse
+                .toList();
     }
 
     @Override
@@ -66,6 +72,9 @@ public class AnnuncioDaoImpl implements AnnuncioDao {
         return fotoRepo.findByAnnuncio_IdAnnuncioOrderByOrdine(idAnnuncio).stream()
                 .map(Foto::getUrlFoto).toList();
     }
+
+
+    // implementazione dei metodi per la creazione, aggiornamento e cancellazione degli annunci
 
     @Override
     public AnnuncioResponse crea(Long idUtente, CreaAnnuncioRequest req) {
@@ -119,6 +128,7 @@ public class AnnuncioDaoImpl implements AnnuncioDao {
         annuncioRepo.deleteById(id);
     }
 
+    
     @Override
     public void updateStato(Long id, Annuncio.StatoAnnuncio stato) {
         annuncioRepo.findById(id).ifPresent(ann -> {
@@ -132,7 +142,8 @@ public class AnnuncioDaoImpl implements AnnuncioDao {
         return annuncioRepo.existsById(id);
     }
 
-    // --- mapping privati ---
+
+    // mapping privati
 
     AnnuncioResponse toResponse(Annuncio a) {
         return new AnnuncioResponse(

@@ -13,18 +13,22 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
-@RequiredArgsConstructor
+// implementazione dell'interfaccia BadgeDao: fornisce i metodi per l'accesso ai dati dei badge nel database
+@Repository // indica che questa classe è un componente di tipo repository, gestito da Spring
+@RequiredArgsConstructor // genera un costruttore con un parametro per ogni campo finale non inizializzato 
 public class BadgeDaoImpl implements BadgeDao {
 
     private final BadgeRepository badgeRepo;
     private final BadgeOttenutoRepository badgeOttenutoRepo;
     private final UtenteRegistratoRepository utenteRepo;
 
+
+    // implementazione dei metodi dell'interfaccia BadgeDao
+
     @Override
     public List<BadgeOttenutoResponse> findByUtente(Long idUtente) {
         return badgeOttenutoRepo.findById_IdUtenteReg(idUtente).stream()
-                .map(this::toResponse)
+                .map(this::toResponse) // mappa ogni oggetto BadgeOttenuto in un oggetto BadgeOttenutoResponse usando il metodo privato toResponse
                 .toList();
     }
 
@@ -43,7 +47,7 @@ public class BadgeDaoImpl implements BadgeDao {
     @Override
     public boolean giaOttenuto(Long idUtente, String nomeBadge) {
         return badgeOttenutoRepo.findById_IdUtenteReg(idUtente).stream()
-                .anyMatch(b -> b.getBadge().getNomeBadge().equals(nomeBadge));
+                .anyMatch(b -> b.getBadge().getNomeBadge().equals(nomeBadge)); 
     }
 
     @Override
@@ -51,7 +55,7 @@ public class BadgeDaoImpl implements BadgeDao {
         utenteRepo.findById(idUtente).ifPresent(utente -> {
             badgeRepo.findById(nomeBadge).ifPresent(badge -> {
                 BadgeOttenuto.BadgeOttenutoId id = new BadgeOttenuto.BadgeOttenutoId();
-                id.setIdUtenteReg(idUtente);
+                id.setIdUtenteReg(idUtente); 
                 id.setNomeBadge(nomeBadge);
 
                 BadgeOttenuto bo = new BadgeOttenuto();
@@ -63,6 +67,9 @@ public class BadgeDaoImpl implements BadgeDao {
         });
     }
 
+
+    // metodi privati per la conversione tra entità e DTO
+    
     private BadgeOttenutoResponse toResponse(BadgeOttenuto bo) {
         BadgeOttenutoResponse.BadgeOttenutoIdDto idDto = new BadgeOttenutoResponse.BadgeOttenutoIdDto(
                 bo.getId().getIdUtenteReg(), bo.getId().getNomeBadge());

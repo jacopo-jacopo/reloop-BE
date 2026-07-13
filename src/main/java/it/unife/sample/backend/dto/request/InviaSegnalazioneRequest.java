@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+// DTO per la richiesta di invio di una segnalazione
 @Data
 public class InviaSegnalazioneRequest {
 

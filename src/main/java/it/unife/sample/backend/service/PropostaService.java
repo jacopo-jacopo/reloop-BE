@@ -19,8 +19,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
+// service per la gestione delle proposte: fornisce metodi per ottenere le proposte ricevute e inviate dall'utente loggato,
+// inviare una nuova proposta, accettare o rifiutare una proposta ricevuta
+@Service // indica che questa classe è un componente di tipo service, gestito da Spring
+@RequiredArgsConstructor // genera un costruttore con un parametro per ogni campo finale non inizializzato
 public class PropostaService {
 
     private final PropostaDao propostaDao;
@@ -29,19 +31,23 @@ public class PropostaService {
     private final UtenteDao utenteDao;
     private final NotificaService notificaService;
 
+    // metodo per ottenere il numero di nuove proposte ricevute dall'utente loggato
     public long getBadge(Long idUtente) {
         LocalDateTime ultimaVisita = utenteDao.getUltimaVisitaProposte(idUtente);
         return propostaDao.countNuoveRicevute(idUtente, ultimaVisita);
     }
 
+    // metodo per ottenere le proposte ricevute dall'utente loggato
     public List<PropostaResponse> getRicevute(Long idUtente) {
         return propostaDao.findRicevute(idUtente);
     }
 
+    // metodo per ottenere le proposte inviate dall'utente loggato
     public List<PropostaResponse> getInviate(Long idUtente) {
         return propostaDao.findInviate(idUtente);
     }
 
+    // metodo per inviare una nuova proposta
     public PropostaResponse invia(InviaPropostaRequest req, Long idUtente) {
         PropostaResponse proposta = propostaDao.crea(req, idUtente);
         Long idPubblicante = proposta.getAnnuncioInteresse().getPubblicante().getIdUtenteReg();
@@ -50,6 +56,9 @@ public class PropostaService {
         return proposta;
     }
 
+    // metodo per accettare una proposta ricevuta: aggiorna lo stato della proposta, sospende gli annunci coinvolti,
+    // rifiuta le altre proposte in attesa per gli annunci coinvolti, crea una notifica per il proponente della proposta accettata 
+    // e crea una chat tra i due utenti
     public ChatResponse accetta(Long idProposta, AccettaPropostaRequest req) {
         PropostaResponse proposta = propostaDao.findById(idProposta)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -69,6 +78,7 @@ public class PropostaService {
         return chatDao.crea(idProposta);
     }
 
+    // metodo per rifiutare una proposta ricevuta: aggiorna lo stato della proposta e crea una notifica per il proponente della proposta rifiutata
     public PropostaResponse rifiuta(Long idProposta) {
         PropostaResponse proposta = propostaDao.findById(idProposta)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));

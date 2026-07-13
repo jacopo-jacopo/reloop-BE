@@ -12,43 +12,52 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
-@RequiredArgsConstructor
+// implementazione dell'interfaccia ChatDao: fornisce i metodi per l'accesso ai dati delle chat nel database
+@Repository // indica che questa classe è un componente di tipo repository, gestito da Spring
+@RequiredArgsConstructor // genera un costruttore con un parametro per ogni campo finale non inizializzato (in questo caso, chatRepo e propostaRepo)
 public class ChatDaoImpl implements ChatDao {
 
     private final ChatRepository chatRepo;
     private final PropostaRepository propostaRepo;
 
+    // trova tutte le chat a cui un utente ha partecipato (come proponente o pubblicante),
+    // ordinate per data dell'ultimo messaggio o della creazione della chat
     @Override
     public List<ChatResponse> findByUtente(Long idUtente) {
         return chatRepo.findByUtente(idUtente).stream().map(this::toResponse).toList();
     }
 
+    // trova una chat in base all'id della proposta generante
     @Override
     public Optional<ChatResponse> findById(Long id) {
         return chatRepo.findById(id).map(this::toResponse);
     }
 
+    // trova le chat vuote a cui un utente ha partecipato (come proponente o pubblicante)
     @Override
     public List<Long> findVuoteByUtente(Long idUtente, LocalDateTime ultimaVisita) {
         return chatRepo.findVuoteByUtente(idUtente, ultimaVisita);
     }
 
+    // trova il numero di chat completate a cui un utente ha partecipato (come proponente o pubblicante)
     @Override
     public long countCompletateByUtente(Long idUtente) {
         return chatRepo.countCompletateByUtente(idUtente);
     }
 
+    // trova il numero di chat con un determinato stato
     @Override
     public long countByStato(Chat.StatoChat stato) {
         return chatRepo.countByStatoChat(stato);
     }
 
+    // trova tutte le chat aperte che coinvolgono un annuncio specifico, sia come annuncio di interesse che come annuncio offerto
     @Override
     public List<ChatResponse> findAperteByAnnuncio(Long idAnnuncio) {
         return chatRepo.findAperteByAnnuncio(idAnnuncio).stream().map(this::toResponse).toList();
     }
 
+    // crea una nuova chat per una proposta generante e la salva nel database
     @Override
     public ChatResponse crea(Long idProposta) {
         Proposta proposta = propostaRepo.findById(idProposta)
@@ -59,6 +68,7 @@ public class ChatDaoImpl implements ChatDao {
         return toResponse(chatRepo.save(chat));
     }
 
+    // aggiorna lo stato di una chat e la salva nel database (per chiusure o annullamenti chat)
     @Override
     public ChatResponse updateStato(Long idChat, Chat.StatoChat stato, LocalDateTime dataCompletamento) {
         Chat chat = chatRepo.findById(idChat)
@@ -68,7 +78,9 @@ public class ChatDaoImpl implements ChatDao {
         return toResponse(chatRepo.save(chat));
     }
 
-    // --- mapping ---
+
+    
+    // metodi privati per mappare le entità del modello in oggetti di risposta (DTO) da restituire al client
 
     ChatResponse toResponse(Chat c) {
         return new ChatResponse(

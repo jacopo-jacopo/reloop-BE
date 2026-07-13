@@ -13,20 +13,23 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
-@RequiredArgsConstructor
+// implementazione dell'interfaccia MessaggioDao: fornisce i metodi per l'accesso ai dati dei messaggi nel database
+@Repository // indica che questa classe è un componente di tipo repository, gestito da Spring
+@RequiredArgsConstructor // genera un costruttore con un parametro per ogni campo finale non inizializzato
 public class MessaggioDaoImpl implements MessaggioDao {
 
     private final MessaggioRepository messaggioRepo;
     private final ChatRepository chatRepo;
     private final UtenteRegistratoRepository utenteRepo;
 
+    // trova tutti i messaggi di una chat specifica, ordinati per data di invio
     @Override
     public List<MessaggioResponse> findByChat(Long idChat) {
         return messaggioRepo.findByIdChatOrderByDataInvio(idChat).stream()
                 .map(this::toResponse).toList();
     }
 
+    // invia un messaggio in una chat specifica e lo salva nel db
     @Override
     public MessaggioResponse invia(Long idChat, Long idMittente, String contenuto) {
         Chat chat = chatRepo.findById(idChat)
@@ -48,23 +51,27 @@ public class MessaggioDaoImpl implements MessaggioDao {
         return toResponse(messaggioRepo.save(msg));
     }
 
+    // trova il numero massimo di ID dei messaggi in una chat specifica
     @Override
     public long findMaxIdByChat(Long idChat) {
         return messaggioRepo.findMaxIdByIdChat(idChat);
     }
 
+    // segna tutti i messaggi di una chat come letti da un utente specifico
     @Override
     public void markAsRead(Long idChat, Long idUtente) {
         messaggioRepo.markAsRead(idChat, idUtente);
     }
 
+    // trova gli id delle chat con messaggi non letti da un utente specifico
     @Override
     public List<Long> findUnreadChatIds(Long idUtente) {
         return messaggioRepo.findUnreadChatIdsByUtente(idUtente);
     }
 
-    // --- mapping ---
 
+    
+    // mapping da Messaggio a MessaggioResponse
     MessaggioResponse toResponse(Messaggio m) {
         MessaggioResponse.MessaggioIdDto idDto = new MessaggioResponse.MessaggioIdDto(
                 m.getId().getIdMessaggio(), m.getId().getIdChat());

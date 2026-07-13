@@ -6,7 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-@Data
+// DTO per la richiesta di invio di una recensione
+@Data // genera automaticamente i metodi getter, setter, equals, hashCode e toString per tutti i campi della classe
 public class InviaRecensioneRequest {
 
     @NotNull

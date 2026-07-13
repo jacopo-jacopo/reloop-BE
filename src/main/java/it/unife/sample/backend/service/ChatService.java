@@ -16,8 +16,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
+// service per la gestione delle chat: fornisce metodi per ottenere le chat dell'utente loggato, ottenere i messaggi di una chat, 
+// inviare un messaggio, completare una chat, ottenere il numero di messaggi non letti e segnare una chat come letta
+@Service // indica che questa classe è un componente di tipo service, gestito da Spring
+@RequiredArgsConstructor // genera un costruttore con un parametro per ogni campo finale non inizializzato
 public class ChatService {
 
     private final ChatDao chatDao;
@@ -30,19 +32,23 @@ public class ChatService {
 
     private static final String CONFERMA_SUFFIX = "ha confermato che lo scambio è stato completato";
 
+    // metodo per ottenere le chat dell'utente loggato
     public List<ChatResponse> getMie(Long idUtente) {
         return chatDao.findByUtente(idUtente);
     }
 
+    // metodo per ottenere una chat per ID
     public ChatResponse getById(Long id) {
         return chatDao.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
+    // metodo per ottenere i messaggi di una chat per ID
     public List<MessaggioResponse> getMessaggi(Long idChat) {
         return messaggioDao.findByChat(idChat);
     }
 
+    // metodo per inviare un messaggio in una chat: verifica che la chat sia aperta, invia il messaggio e crea una notifica per l'altro utente
     public MessaggioResponse inviaMessaggio(Long idChat, Long idMittente, InviaMessaggioRequest req) {
         ChatResponse chat = chatDao.findById(idChat)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -57,6 +63,8 @@ public class ChatService {
         return risposta;
     }
 
+    // metodo per completare una chat: verifica che la chat sia aperta, invia un messaggio di conferma, 
+    // aggiorna lo stato della chat e degli annunci, calcola la CO2 risparmiata e assegna i badge agli utenti
     public CompletaResponse completa(Long idChat, Long idUtente) {
         ChatResponse chat = chatDao.findById(idChat)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -88,7 +96,7 @@ public class ChatService {
             return new CompletaResponse(false, null);
         }
 
-        // Entrambi confermati: completamento
+        // entrambi confermano: completamento
         chatDao.updateStato(idChat, Chat.StatoChat.completata, LocalDateTime.now());
 
         Long idInteresse = chat.getPropostaGenerante().getAnnuncioInteresse().getIdAnnuncio();
@@ -115,6 +123,7 @@ public class ChatService {
         return new CompletaResponse(true, idAltroUtente);
     }
 
+    // metodo per ottenere gli id dei messaggi non letti e delle chat vuote dell'utente loggato
     public NonLettiResponse getNonLetti(Long idUtente) {
         LocalDateTime ultimaVisita = utenteDao.getUltimaVisitaChat(idUtente);
         List<Long> messaggiNonLetti = messaggioDao.findUnreadChatIds(idUtente);
@@ -122,10 +131,13 @@ public class ChatService {
         return new NonLettiResponse(messaggiNonLetti, chatVuote);
     }
 
+    // metodo per segnare i messaggi di una chat come letti
     public void leggi(Long idChat, Long idUtente) {
         messaggioDao.markAsRead(idChat, idUtente);
     }
 
+    // metodo per annullare una chat: aggiorna lo stato della chat e degli annunci, 
+    // invia un messaggio di annullamento e crea una notifica per l'altro utente
     public ChatResponse annulla(Long idChat, Long idUtente) {
         ChatResponse chat = chatDao.findById(idChat)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -148,6 +160,7 @@ public class ChatService {
         return chatDao.findById(idChat).orElseThrow();
     }
 
+    // metodo privato per calcolare la CO2 risparmiata da uno scambio, interrogando il servizio ClimatiqService
     private BigDecimal calcolaCo2(Long idAnnuncio) {
         return annuncioDao.findById(idAnnuncio).map(ann -> {
             BigDecimal prezzo = ann.getPrezzoStimato();
