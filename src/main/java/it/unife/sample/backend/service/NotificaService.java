@@ -32,9 +32,9 @@ public class NotificaService {
         notificaDao.segnaLetta(idNotifica);
     }
 
-    // metodo per segnare tutte le notifiche di un utente come lette: riceve l'id dell'utente e chiama il metodo segnaLutteLette del NotificaDao
-    public void segnaLutteLette(Long idUtente) {
-        notificaDao.segnaLutteLette(idUtente);
+    // metodo per segnare tutte le notifiche di un utente come lette: riceve l'id dell'utente e chiama il metodo segnaTutteLette del NotificaDao
+    public void segnaTutteLette(Long idUtente) {
+        notificaDao.segnaTutteLette(idUtente);
     }
 
     // metodo per contare le notifiche non lette di un utente: riceve l'id dell'utente e chiama il metodo countNonLette del NotificaDao

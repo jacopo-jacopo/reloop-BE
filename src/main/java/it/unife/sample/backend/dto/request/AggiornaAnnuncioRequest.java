@@ -5,7 +5,8 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
-@Data
+// rappresenta la richiesta per aggiornare un annuncio esistente, contiene i campi che possono essere modificati dell'annuncio
+@Data // genera automaticamente i metodi getter, setter, equals, hashCode e toString per i campi della classe
 public class AggiornaAnnuncioRequest {
 
     private String titolo;

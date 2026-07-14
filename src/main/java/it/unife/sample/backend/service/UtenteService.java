@@ -91,7 +91,8 @@ public class UtenteService {
                                 u.getQuartiere().getIdQuartiere(),
                                 u.getQuartiere().getNomeQuartiere(),
                                 u.getQuartiere().getCitta()
-                        )
+                        ),
+                        u.getFotoProfilo()
                 ))
                 .toList();
     }
@@ -117,7 +118,8 @@ public class UtenteService {
                         u.getQuartiere().getIdQuartiere(),
                         u.getQuartiere().getNomeQuartiere(),
                         u.getQuartiere().getCitta()
-                )
+                ),
+                u.getFotoProfilo()
         );
     }
 }

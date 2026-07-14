@@ -11,6 +11,6 @@ public interface NotificaDao {
     void crea(Long idDestinatario, Notifica.TipoNotifica tipo, String testo); // crea una nuova notifica per un utente destinatario e la salva nel db
     List<NotificaResponse> findByUtente(Long idUtente); // restituisce la lista delle notifiche di un utente, ordinate per data di creazione decrescente
     void segnaLetta(Long idNotifica); // segna una notifica come letta
-    void segnaLutteLette(Long idUtente); // segna tutte le notifiche di un utente come lette
+    void segnaTutteLette(Long idUtente); // segna tutte le notifiche di un utente come lette
     long countNonLette(Long idUtente); // restituisce il numero di notifiche non lette di un utente
 }

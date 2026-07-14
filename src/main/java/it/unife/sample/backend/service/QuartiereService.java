@@ -9,8 +9,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
+// service per la gestione dei quartieri:
+// fornisce metodi per ottenere la lista di tutti i quartieri, creare un nuovo quartiere e aggiornare un quartiere esistente
+@Service // indica che questa classe è un componente di tipo service, gestito da Spring
+@RequiredArgsConstructor // genera un costruttore con un parametro per ogni campo finale non inizializzato
 public class QuartiereService {
 
     // inietta il DAO dei quartieri per accedere ai dati dei quartieri nel database
