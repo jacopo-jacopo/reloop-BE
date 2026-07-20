@@ -3,6 +3,7 @@ package it.unife.sample.backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 // classe che rappresenta una proposta di scambio tra due utenti, generata da un annuncio di interesse: 
@@ -39,7 +40,7 @@ public class Proposta {
     // relazione uno-a-molti con gli annunci inclusi nella proposta: una proposta può includere più annunci offerti
     @OneToMany(mappedBy = "proposta", fetch = FetchType.EAGER) // indica che questa relazione è di tipo uno-a-molti e che il caricamento delle 
                                                                // entità correlate deve avvenire in modo eager (cioè subito)
-    private List<AnnuncioIncluso> annunciOfferti;
+    private List<AnnuncioIncluso> annunciOfferti = new ArrayList<>();
 
     @PrePersist // indica che questo metodo deve essere eseguito prima di salvare l'entità nel db, per impostare il timestamp della proposta
     public void prePersist() {

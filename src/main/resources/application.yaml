@@ -2,9 +2,12 @@ spring:
   application:
     name: webapp
   datasource:
-    url: jdbc:mysql://webapp-reloop.g.aivencloud.com:22316/defaultdb?useSSL=true&requireSSL=true
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    #url: jdbc:mysql://webapp-reloop.g.aivencloud.com:22316/defaultdb?useSSL=true&requireSSL=true
+    #username: ${DB_USERNAME}
+    #password: ${DB_PASSWORD}
+    url: jdbc:mysql://localhost:3306/webapp
+    username: webappuser
+    password: webapppassword
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

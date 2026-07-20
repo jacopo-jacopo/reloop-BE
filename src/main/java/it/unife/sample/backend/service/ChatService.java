@@ -59,7 +59,8 @@ public class ChatService {
         Long idPubblicante = chat.getPropostaGenerante().getAnnuncioInteresse().getPubblicante().getIdUtenteReg();
         Long idProponente  = chat.getPropostaGenerante().getProponente().getIdUtenteReg();
         Long idAltro = idMittente.equals(idPubblicante) ? idProponente : idPubblicante;
-        notificaService.crea(idAltro, Notifica.TipoNotifica.NUOVO_MESSAGGIO, "Hai ricevuto un nuovo messaggio.");
+        notificaService.crea(idAltro, Notifica.TipoNotifica.NUOVO_MESSAGGIO,
+                "Hai ricevuto un nuovo messaggio da " + risposta.getMittente().getNomeCompleto() + ".");
         return risposta;
     }
 

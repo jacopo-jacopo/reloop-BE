@@ -144,8 +144,8 @@ public class PropostaDaoImpl implements PropostaDao {
     // metodi di mappatura tra entità e DTO di risposta
 
     PropostaResponse toResponse(Proposta p) {
-        List<PropostaResponse.AnnuncioInclusoSummary> offerti = p.getAnnunciOfferti().stream()
-                .map(this::toAnnuncioInclusoSummary).toList();
+        List<PropostaResponse.AnnuncioInclusoSummary> offerti = p.getAnnunciOfferti() == null ? List.of() :
+                p.getAnnunciOfferti().stream().map(this::toAnnuncioInclusoSummary).toList();
         return new PropostaResponse(
                 p.getIdProposta(),
                 p.getStatoProposta().name(),

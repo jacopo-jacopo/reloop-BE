@@ -104,7 +104,7 @@ public class ChatDaoImpl implements ChatDao {
     }
 
     private ChatResponse.UtenteChatSummary toUtenteSummary(UtenteRegistrato u) {
-        return new ChatResponse.UtenteChatSummary(u.getIdUtenteReg(), u.getNomeCompleto(), u.getFotoProfilo());
+        return new ChatResponse.UtenteChatSummary(u.getIdUtenteReg(), u.getNomeCompleto(), u.getFotoProfilo(), u.getIndirizzo());
     }
 
     private ChatResponse.AnnuncioInteresseSummary toAnnuncioInteresseSummary(Annuncio a) {

@@ -36,6 +36,7 @@ public class ChatResponse {
         private Long idUtenteReg;
         private String nomeCompleto;
         private String fotoProfilo;
+        private String indirizzo;
     }
 
     // classe interna per rappresentare un riassunto dell'annuncio di interesse della chat: 

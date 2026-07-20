@@ -73,7 +73,8 @@ public class PropostaService {
         propostaDao.rifiutaProposteInAttesaPerAnnunci(idInteresse, req.getIdAnnuncioScelto(), idProposta);
 
         notificaService.crea(proposta.getProponente().getIdUtenteReg(), Notifica.TipoNotifica.PROPOSTA_ACCETTATA,
-                "La tua proposta per \"" + proposta.getAnnuncioInteresse().getTitolo() + "\" è stata accettata!");
+                "La tua proposta per \"" + proposta.getAnnuncioInteresse().getTitolo() + "\" è stata accettata da "
+                + proposta.getAnnuncioInteresse().getPubblicante().getNomeCompleto() + "!");
 
         return chatDao.crea(idProposta);
     }
