@@ -56,6 +56,10 @@ public interface PropostaRepository extends JpaRepository<Proposta, Long> {
     """)
     List<Proposta> findByAnnuncioOffertoAndStatoProposta(@Param("idAnnuncio") Long idAnnuncio, @Param("stato") Proposta.StatoProposta stato);
 
+    // verifica se esiste già una proposta in_attesa dello stesso proponente per lo stesso annuncio
+    boolean existsByAnnuncioInteresse_IdAnnuncioAndProponente_IdUtenteRegAndStatoProposta(
+        Long idAnnuncio, Long idProponente, Proposta.StatoProposta stato);
+
     // conta il numero totale di proposte nel database
     long count();
 }

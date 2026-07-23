@@ -16,4 +16,8 @@ public interface SegnalazioneRepository extends JpaRepository<Segnalazione, Long
     // verifica se l'utente ha già una segnalazione non chiusa per questo annuncio
     boolean existsBySegnalante_IdUtenteRegAndAnnuncioSegnalato_IdAnnuncioAndStatoSegnalazioneNot(
             Long idUtente, Long idAnnuncio, Segnalazione.StatoSegnalazione stato);
+
+    // trova tutte le segnalazioni non chiuse per un annuncio specifico
+    List<Segnalazione> findByAnnuncioSegnalato_IdAnnuncioAndStatoSegnalazioneNot(
+            Long idAnnuncio, Segnalazione.StatoSegnalazione stato);
 }

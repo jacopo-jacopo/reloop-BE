@@ -12,7 +12,9 @@ import it.unife.sample.backend.repository.AnnuncioRepository;
 import it.unife.sample.backend.repository.PropostaRepository;
 import it.unife.sample.backend.repository.UtenteRegistratoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +63,10 @@ public class PropostaDaoImpl implements PropostaDao {
                 .orElseThrow(() -> new IllegalArgumentException("Annuncio di interesse non trovato"));
         UtenteRegistrato proponente = utenteRepo.findById(idProponente)
                 .orElseThrow(() -> new IllegalArgumentException("Utente non trovato"));
+
+        if (propostaRepo.existsByAnnuncioInteresse_IdAnnuncioAndProponente_IdUtenteRegAndStatoProposta(
+                req.getIdAnnuncioInteresse(), idProponente, Proposta.StatoProposta.in_attesa))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Hai già una proposta in attesa per questo annuncio.");
 
         Proposta proposta = new Proposta();
         proposta.setAnnuncioInteresse(interesse);

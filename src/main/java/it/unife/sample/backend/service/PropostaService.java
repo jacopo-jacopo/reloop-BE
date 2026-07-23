@@ -52,7 +52,7 @@ public class PropostaService {
         PropostaResponse proposta = propostaDao.crea(req, idUtente);
         Long idPubblicante = proposta.getAnnuncioInteresse().getPubblicante().getIdUtenteReg();
         notificaService.crea(idPubblicante, Notifica.TipoNotifica.NUOVA_PROPOSTA,
-                "Hai ricevuto una nuova proposta per \"" + proposta.getAnnuncioInteresse().getTitolo() + "\".");
+                "Hai ricevuto una nuova proposta per \"" + proposta.getAnnuncioInteresse().getTitolo() + "\" da " + proposta.getProponente().getNomeCompleto() + ".");
         return proposta;
     }
 

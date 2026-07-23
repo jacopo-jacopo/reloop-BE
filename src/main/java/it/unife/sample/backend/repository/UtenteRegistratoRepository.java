@@ -17,7 +17,7 @@ public interface UtenteRegistratoRepository extends JpaRepository<UtenteRegistra
     boolean existsByEmail(String email);
 
     // trova tutti gli utenti registrati ordinati per punteggio decrescente (per la leaderboard)
-    @Query("SELECT u FROM UtenteRegistrato u ORDER BY u.punteggio DESC")
+    @Query("SELECT u FROM UtenteRegistrato u ORDER BY u.punteggio DESC, u.co2Totale DESC")
     List<UtenteRegistrato> findLeaderboard();
 
     // trova tutti gli utenti registrati appartenenti a un determinato quartiere

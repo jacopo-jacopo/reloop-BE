@@ -8,9 +8,11 @@ import it.unife.sample.backend.dto.response.QuartiereResponse;
 import it.unife.sample.backend.model.Annuncio;
 import it.unife.sample.backend.model.Foto;
 import it.unife.sample.backend.model.Quartiere;
+import it.unife.sample.backend.model.Segnalazione;
 import it.unife.sample.backend.model.UtenteRegistrato;
 import it.unife.sample.backend.repository.AnnuncioRepository;
 import it.unife.sample.backend.repository.FotoRepository;
+import it.unife.sample.backend.repository.SegnalazioneRepository;
 import it.unife.sample.backend.repository.UtenteRegistratoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -26,6 +28,7 @@ public class AnnuncioDaoImpl implements AnnuncioDao {
     private final AnnuncioRepository annuncioRepo;
     private final FotoRepository fotoRepo;
     private final UtenteRegistratoRepository utenteRepo;
+    private final SegnalazioneRepository segnalazioneRepo;
 
 
     // implementazione dei metodi dell'interfaccia AnnuncioDao
@@ -116,7 +119,11 @@ public class AnnuncioDaoImpl implements AnnuncioDao {
         if (req.getCategoria() != null)                ann.setCategoria(req.getCategoria());
         if (req.getPrezzoStimato() != null)            ann.setPrezzoStimato(req.getPrezzoStimato());
         if (req.getCondizioni() != null)               ann.setCondizioni(req.getCondizioni());
-        if (req.getStatoAnnuncio() != null)            ann.setStatoAnnuncio(req.getStatoAnnuncio());
+        if (req.getStatoAnnuncio() != null) {
+            ann.setStatoAnnuncio(req.getStatoAnnuncio());
+            if (req.getStatoAnnuncio() == Annuncio.StatoAnnuncio.chiuso)
+                chiudiSegnalazioniAperte(id);
+        }
         if (req.getNotificaOscuramentoLetta() != null) ann.setNotificaOscuramentoLetta(req.getNotificaOscuramentoLetta());
 
         return toResponse(annuncioRepo.save(ann));
@@ -135,6 +142,13 @@ public class AnnuncioDaoImpl implements AnnuncioDao {
             ann.setStatoAnnuncio(stato);
             annuncioRepo.save(ann);
         });
+        if (stato == Annuncio.StatoAnnuncio.chiuso) chiudiSegnalazioniAperte(id);
+    }
+
+    private void chiudiSegnalazioniAperte(Long idAnnuncio) {
+        segnalazioneRepo
+            .findByAnnuncioSegnalato_IdAnnuncioAndStatoSegnalazioneNot(idAnnuncio, Segnalazione.StatoSegnalazione.chiusa)
+            .forEach(s -> { s.setStatoSegnalazione(Segnalazione.StatoSegnalazione.chiusa); segnalazioneRepo.save(s); });
     }
 
     @Override

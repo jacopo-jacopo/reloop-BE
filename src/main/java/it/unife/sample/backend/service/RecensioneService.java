@@ -34,16 +34,14 @@ public class RecensioneService {
     public RecensioneResponse invia(InviaRecensioneRequest req, Long idRecensore) {
         RecensioneResponse risposta = recensioneDao.salva(req, idRecensore);
 
-        if (req.getIdChat() != null) {
-            UtenteRegistrato recensore = utenteDao.findEntityById(idRecensore).orElse(null);
-            if (recensore != null) {
-                String contenuto = recensore.getNomeCompleto() + " " + RECENSIONE_SUFFIX;
-                messaggioDao.invia(req.getIdChat(), idRecensore, contenuto);
-            }
+        UtenteRegistrato recensore = utenteDao.findEntityById(idRecensore).orElse(null);
+
+        if (req.getIdChat() != null && recensore != null) {
+            messaggioDao.invia(req.getIdChat(), idRecensore, recensore.getNomeCompleto() + " " + RECENSIONE_SUFFIX);
         }
 
         notificaService.crea(req.getIdUtenteRegRecensito(), Notifica.TipoNotifica.NUOVA_RECENSIONE,
-                "Hai ricevuto una nuova recensione.");
+                recensore != null ? "Hai ricevuto una nuova recensione da " + recensore.getNomeCompleto() + "." : "Hai ricevuto una nuova recensione.");
 
         return risposta;
     }

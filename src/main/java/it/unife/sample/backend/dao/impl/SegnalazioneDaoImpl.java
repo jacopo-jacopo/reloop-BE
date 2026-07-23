@@ -94,6 +94,12 @@ public class SegnalazioneDaoImpl implements SegnalazioneDao {
             });
 
             gestisciOscuramento(annuncio);
+
+            segnalazioneRepo
+                .findByAnnuncioSegnalato_IdAnnuncioAndStatoSegnalazioneNot(annuncio.getIdAnnuncio(), Segnalazione.StatoSegnalazione.chiusa)
+                .stream()
+                .filter(altra -> !altra.getIdSegnalazione().equals(s.getIdSegnalazione()))
+                .forEach(altra -> { altra.setStatoSegnalazione(Segnalazione.StatoSegnalazione.chiusa); segnalazioneRepo.save(altra); });
         }
 
         return toResponse(segnalazioneRepo.save(s));
