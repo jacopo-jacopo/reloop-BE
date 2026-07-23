@@ -78,8 +78,15 @@ public class ChatDaoImpl implements ChatDao {
         return toResponse(chatRepo.save(chat));
     }
 
+    @Override
+    public ChatResponse setConferma(Long idChat, boolean isPubblicante) {
+        Chat chat = chatRepo.findById(idChat)
+                .orElseThrow(() -> new IllegalArgumentException("Chat non trovata"));
+        if (isPubblicante) chat.setConfermatoPubblicante(true);
+        else               chat.setConfermatoProponente(true);
+        return toResponse(chatRepo.save(chat));
+    }
 
-    
     // metodi privati per mappare le entità del modello in oggetti di risposta (DTO) da restituire al client
 
     ChatResponse toResponse(Chat c) {
@@ -88,7 +95,9 @@ public class ChatDaoImpl implements ChatDao {
                 c.getStatoChat().name(),
                 c.getDataCompletamento(),
                 c.getTimestampChat(),
-                toPropostaSummary(c.getPropostaGenerante())
+                toPropostaSummary(c.getPropostaGenerante()),
+                c.isConfermatoPubblicante(),
+                c.isConfermatoProponente()
         );
     }
 

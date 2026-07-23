@@ -2,6 +2,7 @@ package it.unife.sample.backend.service;
 
 import it.unife.sample.backend.model.Badge;
 import it.unife.sample.backend.model.BadgeOttenuto;
+import it.unife.sample.backend.model.Notifica;
 import it.unife.sample.backend.model.UtenteRegistrato;
 import it.unife.sample.backend.repository.BadgeOttenutoRepository;
 import it.unife.sample.backend.repository.BadgeRepository;
@@ -22,6 +23,7 @@ public class BadgeService {
     private final BadgeOttenutoRepository badgeOttenutoRepo;
     private final UtenteRegistratoRepository utenteRepo;
     private final RecensioneRepository recensioneRepo;
+    private final NotificaService notificaService;
 
     // metodo per assegnare i badge a un utente
     public void assegnaBadge(Long idUtente) {
@@ -54,6 +56,8 @@ public class BadgeService {
                 badgeOttenuto.setUtente(utente);
                 badgeOttenuto.setBadge(badge);
                 badgeOttenutoRepo.save(badgeOttenuto);
+                notificaService.crea(utente.getIdUtenteReg(), Notifica.TipoNotifica.BADGE_SBLOCCATO,
+                        "Hai sbloccato il badge \"" + badge.getNomeBadge() + "\"!");
             }
         }
     }

@@ -18,7 +18,9 @@ public class Notifica {
         NUOVO_MESSAGGIO,
         NUOVA_RECENSIONE,
         ANNUNCIO_ELIMINATO,
-        ACCOUNT_BLOCCATO
+        ACCOUNT_BLOCCATO,
+        SCAMBIO_ANNULLATO,
+        BADGE_SBLOCCATO
     }
 
     // campi della classe Notifica, mappati alle colonne della tabella "notifica" del database

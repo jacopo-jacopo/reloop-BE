@@ -76,22 +76,17 @@ public class ChatService {
         Long idPubblicante = chat.getPropostaGenerante().getAnnuncioInteresse().getPubblicante().getIdUtenteReg();
         Long idProponente  = chat.getPropostaGenerante().getProponente().getIdUtenteReg();
 
-        List<MessaggioResponse> messaggi = messaggioDao.findByChat(idChat);
-        boolean confermaPubblicante = messaggi.stream().anyMatch(m ->
-                m.getContenuto().endsWith(CONFERMA_SUFFIX)
-                && m.getMittente().getIdUtenteReg().equals(idPubblicante));
-        boolean confermaProponente = messaggi.stream().anyMatch(m ->
-                m.getContenuto().endsWith(CONFERMA_SUFFIX)
-                && m.getMittente().getIdUtenteReg().equals(idProponente));
-
-        boolean giaConfermatoDaMe = idUtente.equals(idPubblicante) ? confermaPubblicante : confermaProponente;
+        boolean isPubblicante = idUtente.equals(idPubblicante);
+        boolean giaConfermatoDaMe = isPubblicante ? chat.isConfermatoPubblicante() : chat.isConfermatoProponente();
 
         if (!giaConfermatoDaMe) {
             UtenteRegistrato utente = utenteDao.findEntityById(idUtente).orElseThrow();
             messaggioDao.invia(idChat, idUtente, utente.getNomeCompleto() + " " + CONFERMA_SUFFIX);
-            if (idUtente.equals(idPubblicante)) confermaPubblicante = true;
-            else confermaProponente = true;
+            chat = chatDao.setConferma(idChat, isPubblicante);
         }
+
+        boolean confermaPubblicante = chat.isConfermatoPubblicante();
+        boolean confermaProponente  = chat.isConfermatoProponente();
 
         if (!(confermaPubblicante && confermaProponente)) {
             return new CompletaResponse(false, null);
@@ -153,9 +148,15 @@ public class ChatService {
                 .map(ai -> ai.getAnnuncioOfferto().getIdAnnuncio())
                 .forEach(id -> annuncioDao.updateStato(id, Annuncio.StatoAnnuncio.attivo));
 
+        Long idPubblicante = chat.getPropostaGenerante().getAnnuncioInteresse().getPubblicante().getIdUtenteReg();
+        Long idProponente  = chat.getPropostaGenerante().getProponente().getIdUtenteReg();
+        Long idAltro = idUtente.equals(idPubblicante) ? idProponente : idPubblicante;
+
         UtenteRegistrato utente = utenteDao.findEntityById(idUtente).orElse(null);
         if (utente != null) {
             messaggioDao.invia(idChat, idUtente, utente.getNomeCompleto() + " ha annullato lo scambio");
+            notificaService.crea(idAltro, Notifica.TipoNotifica.SCAMBIO_ANNULLATO,
+                    utente.getNomeCompleto() + " ha annullato lo scambio.");
         }
 
         return chatDao.findById(idChat).orElseThrow();

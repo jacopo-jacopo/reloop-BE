@@ -6,6 +6,7 @@ import it.unife.sample.backend.dto.request.InviaSegnalazioneRequest;
 import it.unife.sample.backend.dto.response.SegnalazioneResponse;
 import it.unife.sample.backend.model.*;
 import it.unife.sample.backend.repository.*;
+import it.unife.sample.backend.service.NotificaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -24,6 +25,7 @@ public class SegnalazioneDaoImpl implements SegnalazioneDao {
     private final PropostaRepository propostaRepo;
     private final ChatRepository chatRepo;
     private final MessaggioRepository messaggioRepo;
+    private final NotificaService notificaService;
 
     private static final String OSCURAMENTO_SUFFIX = "è stato rimosso da un amministratore e non è più disponibile.";
 
@@ -150,6 +152,10 @@ public class SegnalazioneDaoImpl implements SegnalazioneDao {
             msg.setContenuto("L'annuncio '" + annuncio.getTitolo() + "' " + OSCURAMENTO_SUFFIX);
             msg.setMittente(annuncioInteresse.getPubblicante());
             messaggioRepo.save(msg);
+
+            Long idProponente = proposta.getProponente().getIdUtenteReg();
+            notificaService.crea(idProponente, Notifica.TipoNotifica.SCAMBIO_ANNULLATO,
+                    "Lo scambio relativo all'annuncio \"" + annuncio.getTitolo() + "\" è stato annullato perché l'annuncio è stato rimosso.");
         }
     }
 

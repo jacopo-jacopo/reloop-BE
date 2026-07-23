@@ -16,6 +16,8 @@ public class ChatResponse {
     private LocalDateTime dataCompletamento;
     private LocalDateTime timestampChat;
     private PropostaGeneranteSummary propostaGenerante;
+    private boolean confermatoPubblicante;
+    private boolean confermatoProponente;
 
     // classe interna per rappresentare un riassunto della proposta generante della chat: 
     // contiene le informazioni principali della proposta, del proponente e degli annunci coinvolti

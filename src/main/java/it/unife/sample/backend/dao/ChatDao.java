@@ -18,7 +18,8 @@ public interface ChatDao {
     long countByStato(Chat.StatoChat stato); // restituisce il numero di chat in un determinato stato (APERTO, IN_CORSO, COMPLETATO)
     List<ChatResponse> findAperteByAnnuncio(Long idAnnuncio); // restituisce la lista delle chat aperte relative a un determinato annuncio
     ChatResponse crea(Long idProposta); // crea una nuova chat relativa a una proposta e restituisce le informazioni della chat
-    ChatResponse updateStato(Long idChat, Chat.StatoChat stato, LocalDateTime dataCompletamento); // aggiorna lo stato di una chat e la data di 
+    ChatResponse updateStato(Long idChat, Chat.StatoChat stato, LocalDateTime dataCompletamento);
+    ChatResponse setConferma(Long idChat, boolean isPubblicante); // aggiorna lo stato di una chat e la data di 
                                                                                                   // completamento (se lo stato è COMPLETATO) 
                                                                                                   // e restituisce le informazioni della chat
 }

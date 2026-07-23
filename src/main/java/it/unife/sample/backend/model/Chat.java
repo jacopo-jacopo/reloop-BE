@@ -33,6 +33,12 @@ public class Chat {
     @Column(name = "timestamp_chat")
     private LocalDateTime timestampChat;
 
+    @Column(name = "confermato_pubblicante", nullable = false)
+    private boolean confermatoPubblicante = false;
+
+    @Column(name = "confermato_proponente", nullable = false)
+    private boolean confermatoProponente = false;
+
     @PrePersist // indica che questo metodo deve essere eseguito prima di salvare l'entità nel db, per impostare il timestamp della chat
     public void prePersist() {
         this.timestampChat = LocalDateTime.now();

@@ -22,7 +22,7 @@ import java.time.Duration;
 public class AuthController {
 
     private final AuthService authService;
-    private final JwtService jwtService;
+    private final JwtService jwtService; 
 
     private static final String COOKIE_NAME = "session";
 
@@ -67,7 +67,7 @@ public class AuthController {
                                                                                 // obbligatorio (può essere null)
 
         if (token == null) return ResponseEntity.status(401).build();  // se il cookie non è presente, restituisce HTTP 401 Unauthorized
-        Claims claims = jwtService.validaEDecodifica(token);
+        Claims claims = jwtService.validaEDecodifica(token); // claims è un oggetto che contiene le informazioni decodificate dal token JWT
         if (claims == null) return ResponseEntity.status(401).build(); // se il token non è valido, restituisce HTTP 401 Unauthorized
 
         Long idUtente = Long.valueOf(claims.getSubject()); // estrae l'id dell'utente dal token JWT (subject)
