@@ -13,4 +13,5 @@ public class UtenteSessioneResponse {
     private String fotoProfilo;
     private String indirizzo;
     private QuartiereResponse quartiere;
+    private boolean bloccato;
 }

@@ -35,10 +35,10 @@ public class UtenteController {
         return ResponseEntity.ok(utenteService.getById(id));
     }
 
-    // endpoint per ottenere la classifica degli utenti: chiama il servizio UtenteService
+    // endpoint per ottenere la classifica degli utenti del quartiere: chiama il servizio UtenteService
     @GetMapping("/leaderboard")
-    public List<LeaderboardItemResponse> getLeaderboard() {
-        return utenteService.getLeaderboard();
+    public List<LeaderboardItemResponse> getLeaderboard(@RequestParam Long idQuartiere) {
+        return utenteService.getLeaderboard(idQuartiere);
     }
 
     // endpoint per ottenere i badge ottenuti dall'utente loggato:

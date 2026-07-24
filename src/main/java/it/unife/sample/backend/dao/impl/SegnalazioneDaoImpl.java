@@ -156,7 +156,7 @@ public class SegnalazioneDaoImpl implements SegnalazioneDao {
             msg.setId(msgId);
             msg.setChat(chat);
             msg.setContenuto("L'annuncio '" + annuncio.getTitolo() + "' " + OSCURAMENTO_SUFFIX);
-            msg.setMittente(annuncioInteresse.getPubblicante());
+            msg.setMittente(annuncio.getPubblicante());
             messaggioRepo.save(msg);
 
             Long idProponente = proposta.getProponente().getIdUtenteReg();

@@ -2,6 +2,7 @@ package it.unife.sample.backend.repository;
 
 import it.unife.sample.backend.model.Annuncio;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 // repository per l'accesso ai dati degli annunci nel database: estende JpaRepository per fornire le operazioni CRUD di base
@@ -31,4 +32,8 @@ public interface AnnuncioRepository extends JpaRepository<Annuncio, Long> {
 
     // conta il numero di annunci con un determinato stato (ad esempio, attivo, completato, ecc.)
     long countByStatoAnnuncio(Annuncio.StatoAnnuncio stato);
+
+    // conta gli annunci raggruppati per categoria, ordinati per frequenza decrescente
+    @Query("SELECT a.categoria, COUNT(a) FROM Annuncio a GROUP BY a.categoria ORDER BY COUNT(a) DESC")
+    List<Object[]> countByCategoria();
 }

@@ -46,8 +46,8 @@ public class UtenteDaoImpl implements UtenteDao {
 
     // trova il profilo pubblico dell'utente registrato con l'id specificato, se esiste, e restituisce anche il numero di scambi completati
     @Override
-    public List<LeaderboardItemResponse> findLeaderboard() {
-        return utenteRepo.findLeaderboard().stream()
+    public List<LeaderboardItemResponse> findLeaderboard(Long idQuartiere) {
+        return utenteRepo.findLeaderboard(idQuartiere).stream()
                 .map(this::toLeaderboardItem) // mappa l'entità UtenteRegistrato alla DTO LeaderboardItemResponse
                 .toList();
     }
@@ -163,7 +163,7 @@ public class UtenteDaoImpl implements UtenteDao {
         return utenteRepo.findAll();
     }
 
-    // restituisce una lista di tutti gli amministratori presenti nel database 
+    // trova tutti gli utenti per la dashboard admin
     @Override
     public List<UtenteRegistrato> findAllAdmin() {
         return utenteRepo.findAll();
@@ -195,7 +195,8 @@ public class UtenteDaoImpl implements UtenteDao {
                 u.getNomeCompleto(),
                 u.getFotoProfilo(),
                 u.getIndirizzo(),
-                toQuartiereResponse(u.getQuartiere()) // mappa l'entità Quartiere alla DTO QuartiereResponse
+                toQuartiereResponse(u.getQuartiere()), // mappa l'entità Quartiere alla DTO QuartiereResponse
+                u.isBloccato()
         );
     }
 

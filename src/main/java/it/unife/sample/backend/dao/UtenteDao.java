@@ -19,7 +19,7 @@ public interface UtenteDao {
     Optional<UtenteSessioneResponse> findSessioneById(Long id); // restituisce le informazioni della sessione di un utente registrato dato il suo id
     Optional<UtenteProfiloResponse> findProfiloById(Long id); // restituisce le informazioni del profilo di un utente registrato dato il suo id
     Optional<UtentePublicoResponse> findPublicoById(Long id, long scambiCompletati); // restituisce le informazioni pubbliche di un utente registrato
-    List<LeaderboardItemResponse> findLeaderboard(); // restituisce la classifica degli utenti registrati in base al punteggio
+    List<LeaderboardItemResponse> findLeaderboard(Long idQuartiere); // restituisce la classifica degli utenti registrati del quartiere in base al punteggio
     Optional<UtenteRegistrato> findEntityByEmail(String email); // restituisce l'entità di un utente registrato dato il suo indirizzo email
     Optional<UtenteRegistrato> findEntityById(Long id); // restituisce l'entità di un utente registrato dato il suo id
     boolean existsByEmail(String email); // verifica se esiste un utente registrato dato il suo indirizzo email

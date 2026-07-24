@@ -40,9 +40,9 @@ public class UtenteService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    // metodo per ottenere la classifica degli utenti: chiama il metodo findLeaderboard di UtenteDao
-    public List<LeaderboardItemResponse> getLeaderboard() {
-        return utenteDao.findLeaderboard();
+    // metodo per ottenere la classifica degli utenti del quartiere: chiama il metodo findLeaderboard di UtenteDao
+    public List<LeaderboardItemResponse> getLeaderboard(Long idQuartiere) {
+        return utenteDao.findLeaderboard(idQuartiere);
     }
 
     // metodo per ottenere i badge ottenuti dall'utente loggato: chiama il metodo findByUtente di BadgeDao

@@ -4,13 +4,16 @@ import it.unife.sample.backend.dao.ChatDao;
 import it.unife.sample.backend.dao.SegnalazioneDao;
 import it.unife.sample.backend.dao.UtenteDao;
 import it.unife.sample.backend.dto.response.AdminStatsResponse;
+import it.unife.sample.backend.dto.response.CategoriaCountResponse;
 import it.unife.sample.backend.dto.response.StatsResponse;
 import it.unife.sample.backend.model.Chat;
 import it.unife.sample.backend.model.UtenteRegistrato;
+import it.unife.sample.backend.repository.AnnuncioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 // service per la gestione delle statistiche: 
 // fornisce metodi per ottenere le statistiche pubbliche, le statistiche per quartiere e le statistiche per l'admin
@@ -21,6 +24,7 @@ public class StatsService {
     private final ChatDao chatDao;
     private final UtenteDao utenteDao;
     private final SegnalazioneDao segnalazioneDao;
+    private final AnnuncioRepository annuncioRepository;
 
     // metodo per ottenere le statistiche pubbliche
     public StatsResponse getPubbliche() {
@@ -45,6 +49,10 @@ public class StatsService {
         long inAttesa = segnalazioni.stream().filter(s -> "in_attesa".equals(s.getStatoSegnalazione())).count();
         long chiuse   = segnalazioni.stream().filter(s -> "chiusa".equals(s.getStatoSegnalazione())).count();
         long bloccati = utenteDao.findAll().stream().filter(UtenteRegistrato::isBloccato).count();
-        return new AdminStatsResponse(inAttesa, chiuse, bloccati);
+        List<CategoriaCountResponse> distribuzione = annuncioRepository.countByCategoria()
+                .stream()
+                .map(row -> new CategoriaCountResponse((String) row[0], (Long) row[1]))
+                .toList();
+        return new AdminStatsResponse(inAttesa, chiuse, bloccati, distribuzione);
     }
 }
